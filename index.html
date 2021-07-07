@@ -1,0 +1,142 @@
+<head>
+<title>The Last Wizard</title>
+<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0,width=1280"> -->
+
+<!-- layers -->
+<!-- canvasBackground - z-index 0 // background -->
+<!-- scroll.png - z-index 3       // graphical scroll for menu -->
+<!-- canvas - z-index 5           // sprites/movement -->
+<!-- menuLayer z-index 8          // new menu layer -->
+<!-- canvas2 - zindex 10          // menus/FX-->
+<!-- canvasGrid - zindex 15                     // Grid and has to be top layer -->
+<!-- #helper #helperInsule - zindex 18          // bubble for informational text -->
+
+<link rel="stylesheet" href="style.css">
+<!-- 18 x 14  64x64 -->
+<link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+
+</head>
+<body style="background-color:black;overflow: hidden;margin:0px;cursor:pointer">
+
+<div id="resources" style="display:none">
+  <img id="cursor" src="sprites\cursor.png" style="display:none" alt="cursor">
+  <img id="cursor_sel" src="sprites\cursor_sel.png" style="display:none" alt="cursor">
+  <img id="cursor_action" src="sprites\cursor_action.png" style="display:none" alt="cursor">
+  <img id="vampire" src="sprites\vampire.png" style="display:none" alt="cursor">
+  <img id="mage" src="sprites\mage.png" style="display:none" alt="cursor">
+  <img id="mage2" src="sprites\mage2.png" style="display:none" alt="cursor">
+  <img id="intro01" src="intro\intro01-min.png" style="display:none" alt="cursor">
+  <img id="goblin" src="sprites\goblin.png" style="display:none" alt="cursor">
+  <img id="zombie" src="sprites\zombie.png" style="display:none" alt="cursor">
+  <img id="goldendragon" src="sprites\goldendragon.png" style="display:none" alt="cursor">
+</div>
+
+<!-- https://codepen.io/lisilinhart/pen/OJRoRJe -->
+<div id="firstScreen">
+  
+  <main>
+    <div id="topText">
+      <h1>
+        the Last Wizard <span id="iconWiz"></span>
+      </h1>
+    </div>
+   <button id="menuAbout">About</button>
+   <button id="menuWizards">Wizards<span id="theWizards"><strong>2</strong></span></button>
+   <button id="menuZoom">Zoom<span id="scaleRatio"><strong>1</strong></span></button> 
+   <button id="initProgram">Begin</button>
+  </main>
+
+</div>
+
+<div id="mainPortal" class="mainPortal" style="display:none;margin: 0 auto;">
+  <canvas class='canvas playArea' id="canvasBackground" style="display:none;background: url('imgs/background-min.png');opacity:0.5;background-repeat:no-repeat;background-size:cover;z-index: 0;position:absolute"></canvas>
+ <canvas class='canvas playArea' id="canvas" style="z-index:5;position:absolute"></canvas> 
+ <canvas class='canvas playArea' id="canvas2" style="z-index: 10;position:absolute"></canvas>
+ <canvas class='canvas playArea' id="canvasGrid" style="opacity:0.5;z-index:14;position:absolute"></canvas>
+ <div class='canvas' id="menuLayer" style="z-index:17;position:absolute">
+  <div id="themenu" style="display:none;position:absolute" class="aMenu"></div>
+  <div id="fakeRight" style="display:none;position:absolute;right:60px;width:300px;height:500px;background-color:black"></div>
+</div>
+  <!-- <div style="z-index: 1;position:absolute">
+    <h1 class="jt --debug">
+      <span class="jt__row">
+        <span class="jt__text">FIGHT</span>
+      </span>
+      <span class="jt__row jt__row--sibling" aria-hidden="true">
+        <span class="jt__text">FIGHT</span>
+      </span>
+      <span class="jt__row jt__row--sibling" aria-hidden="true">
+        <span class="jt__text">FIGHT</span>
+      </span>
+      <span class="jt__row jt__row--sibling" aria-hidden="true">
+        <span class="jt__text">FIGHT</span>
+      </span>
+    </h1>
+    </div> -->
+</div>
+
+<div id="helper"></div>
+<div id="helperInsult"></div>
+<div id="mouse"><span></span><span></span></div>
+<!-- <div class="circle" id="circle"></div> -->
+
+
+<!-- <div id="scroll" style="z-index:3;position:absolute;top:235;left:25;opacity:0"><img style="width:250px;height:250px" src="scroll.png"></div>-->
+
+
+
+
+
+</body>
+
+<script
+  src="https://code.jquery.com/jquery-3.6.0.min.js"
+  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+  crossorigin="anonymous"></script>
+
+<script>
+  (function(w) {
+        var oldST = w.setTimeout;
+        var oldSI = w.setInterval;
+        var oldCI = w.clearInterval;
+        var timers = [];
+        w.timers = timers;
+        w.setTimeout = function(fn, delay) {
+            var id = oldST(function() {
+                fn && fn();
+                removeTimer(id);
+            }, delay);
+            timers.push(id);
+            return id;
+        };
+        w.setInterval = function(fn, delay) {
+            var id = oldSI(fn, delay);
+            timers.push(id);
+            return id;
+        };
+        w.clearInterval = function(id) {
+            oldCI(id);
+            removeTimer(id);
+        };
+        w.clearTimeout = w.clearInterval;
+    
+        function removeTimer(id) {
+            var index = timers.indexOf(id);
+            if (index >= 0)
+                timers.splice(index, 1);
+        }
+    }(window));
+</script>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
+<script src="jquery.imgexplode.min.js"></script>
+  <script src="config.js"></script>
+  <script src="combat.js"></script>
+  <script src="movement.js"></script>
+  <script src="render.js"></script>
+  <script src="setup.js"></script>
+  <script src="menu.js"></script>
+  <script src="drawtext.js"></script>
+  <script src="intro.js"></script>
+  <script src="ai.js"></script>
