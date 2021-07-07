@@ -40,9 +40,6 @@ current_state = 'left';
 mX.a --
 ```
 
-![Screenshot](blog/getters.PNG)
-
-
 ### Wednesday 06/23/2021 - Day 7
 
 Today is a glorious day for I have worked out a way to do collition detection which is somewhat important in a game... 
@@ -71,10 +68,4 @@ for(var i=1; i<maxFireFrame; i++)
   }
 ```
 
-![Screenshot](blog/collide.png)
 
-The line in red is the path of the array listx. 
-
-The invisible square is placed over the target sprite, and if the lines coordinates hit the target square, i.e. its 'isPointInPath' then we can detect true! A hit!
-
-boo is used as a boolean to mark that a sprite has been hit
