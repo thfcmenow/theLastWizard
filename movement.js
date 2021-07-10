@@ -129,9 +129,10 @@ function strikePath(minFireX,minFireY,tarx,tary)
         // if target is below player then subtrack stepsNeededY
          // if target is above player then add stepsNeededY
             tary > track[currentlySelectedCharacterIndex].y ? mOb.y = listx[i-1].y - stepsNeededY : mOb.y = listx[i-1].y + stepsNeededY
-          cde.fillStyle='white'
+         if (debug.spellPath == 1){
+			cde.fillStyle='white'
             cde.fillRect(mOb.x,mOb.y,5,5)
-            
+		 }
             listx.push(mOb)
         }
         console.log('%c listx ver 2:' + listx,'background-color:black; color:yellow')
@@ -143,6 +144,9 @@ console.log(listx.length)
 
 function strike(e){
     // when you looking for target for ranged spell
+	// explosion test
+
+
 
     // tenmpsprite needs to be cursor? so track[0]
   // let objIndex = track.findIndex((obj => obj.id == tempsprite.id));
@@ -159,17 +163,25 @@ function strike(e){
     console.log("mousePos: ", mousePos)
 
     // let user know what we are doing
-    // helper(track[currentlySelectedCharacterIndex],"Casting spell - M")
+    helper(track[currentlySelectedCharacterIndex],"Casting spell - M")
     // find character/monster you have targetted
-    targetIndex = findO(track,"mousePos","index",mousePos.x + "," + mousePos.y)
+    // targetIndex = findO(track,"mousePos","index",mousePos.x + "," + mousePos.y)
+	targetIndex = latestSelectedMonster.gKey
  console.log('targetIndex:',targetIndex)
     // is the track clear?
     
     minFireX = track[currentlySelectedCharacterIndex].x
     minFireY = track[currentlySelectedCharacterIndex].y
     tarFireX = mousePos.x * global.spriteSize.width
+	
+	targetFireX = latestSelectedMonster.x
+	console.log("%c -- tarFireX: " + targetFireX, "background-color:purple;color:white")
+	
     tarFireY = mousePos.y * global.spriteSize.width
-    strikePath(minFireX,minFireY,tarFireX,tarFireY)
+
+	targetFireY = latestSelectedMonster.y
+	console.log("%c -- tarFireY: " + targetFireY, "background-color:purple;color:white")
+    strikePath(minFireX,minFireY,targetFireX,targetFireY)
     trackDup = []
     i = -1;
 
@@ -190,8 +202,9 @@ console.log("mins and tars: " ,minFireX,minFireY,tarFireX,tarFireY,trackDup[1].x
         if (trackDup[l].y >= minFireY && trackDup[l].y <= tarFireY){console.log("ylock")}
     } // sweep through and see if in path of fire
     
-  explodeCircle()
+  // explodeCircle()
 
+generateParticle(-1,-1)
     // fire ranged spell
     generateParticle(-1,-1,currentlySelectedCharacterIndex,targetIndex,mainspell)
 

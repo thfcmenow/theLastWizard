@@ -27,7 +27,8 @@ var debug = {
   },
  "maxPlayerRange"     : "1",
  "fancyBattlefield"   : {"display":0},                   // zoom in battlefield or no
- "testMouse"          : {"test":1}                       // test mouse click positions
+ "testMouse"          : {"test":1},                      // test mouse click positions
+ "spellPath"		  : 0 
 }
 
 // keeps tracking what sprite is moving (direction) at what time
@@ -71,7 +72,7 @@ var global = {
 "margin":{"value":32}, // global borders
 "noOfPlayers": 2, // default no of players (2-4)
 "insults": 6000, // how often should insults be generated
-"audioOverride":0 // if set to 1 will disable all audio
+"audioOverride":1 // if set to 1 will disable all audio
 }  
 
 // global.boundary.width = window.innerWidth;
@@ -281,6 +282,12 @@ const animations =
    "cast":
    {
     "down":  [{x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0}, {x: 3, y: 0}, {x: 4, y: 0}, {x: 5, y: 0}]
+    },
+	"horse":
+   {
+    "down":  [{x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0}, {x: 3, y: 0}, {x: 4, y: 0}, {x: 5, y: 0}],
+	 "left":  [{x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0}, {x: 3, y: 0}, {x: 4, y: 0}, {x: 5, y: 0}]
+    
     }
 }
 
@@ -289,7 +296,8 @@ const animations =
 const monsters = {
     "goblin":         {"lockID": "goblin",      "DP":[30,0],      "Type": "Regular", "HP":20,  "AP":9,   "Range":3,  a: "a",  id:"Goblin"},
     "vampire":        {"lockID": "vampire",     "DP":[30,0], "Type": "Undead",  "HP":10,  "AP":24,  "Range":4,  a: "a",  id:"Vampire"},
-    "goldendragon":   {"lockID": "goldendragon","DP":0,      "Type": "Legend",  "HP":67,  "AP":44,  "Range":4,  a: "a",  id:"Golden Dragon"}
+    "goldendragon":   {"lockID": "goldendragon","DP":0,      "Type": "Legend",  "HP":67,  "AP":44,  "Range":4,  a: "a",  id:"Golden Dragon"},
+	"horse":		  {"lockID": "horse",       "DP":0,      "Type": "Regular", "HP": 67, "AP": 44, "Range":4,	a: "a",  id:"Horse"  }
 }
 
 const monstersPending =
@@ -329,11 +337,6 @@ const monstersPending =
      "HP": 67,
      "AP": 44
      },
-     "Horse":{
-     "Type": "Regular",
-     "HP": 67,
-     "AP": 44
-    },
      "Unicorn":{
      "Type": "Regular",
      "HP": 67,
@@ -411,5 +414,22 @@ const monstersPending =
      }
     }
     
-
+// sprite fx - explosive impact
+sp = document.getElementById("explosion").style
+sp.display = "none"
+sp.position = "absolute";
+sp.transform = "scale(1.5)";
+sp.zIndex = 50
+sp1 = new jSprite({
+spriteSheet: "./sprites/explosion-1.png",
+container: "explosion",
+columns: 7,
+rows: 1,
+timing: 100,
+autoStart: false,
+widthOffset: -5,
+repeat: false,
+onStart: function(){sp.display = "block"},
+onComplete: function(){sp.display = "none"}
+});
    

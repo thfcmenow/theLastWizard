@@ -564,6 +564,11 @@ function mainProg(){
 
   var goblin = new Sprite("goblin",64,128,64,64,"goblin.png","down",0,4,2,1,"monster")
  generateSprite(goblin,1)
+ 
+ // constructor (ID,width,height,frameWidth,frameHeight,src,current_state,current_frame,posx,posy,trackMovement,classType,monsterType)
+  // 574 66
+   // var horse = new Sprite("horse",574,64,64,64,"horse.png","down",0,7,2,1,"monster")
+ // generateSprite(horse,1)
 
 
  //update gameboard
@@ -629,6 +634,24 @@ function helper(obJS,text){
 
   }
 
+var helperElement = document.getElementById('helper').style;
+function helper(obJS,text){
+    
+    $("#helper").html("")
+    helperElement.transition = '0.3s';
+    helperElement.border = 'border 1px white'
+    helperElement.opacity = 1 
+    $("#helper").show()
+    $("#helper").css("left",(obJS.x + global.spriteSize.width + 80)*scaleValue)
+    $("#helper").css("top",(obJS.y + global.spriteSize.height + 0)*scaleValue)
+    options = {strings: [text],contentType: 'html', typeSpeed: 20};
+    var typed = new Typed('#helper', options);
+    sleep(4000).then(() => { 
+        helperElement.transition = '1s';
+        helperElement.opacity = 0
+    });
+
+    }
   
 // some first screen setup
 // vertically align menu
@@ -707,6 +730,8 @@ scaledMargin = global.margin.value * scaleValue * scaleValue
 scaledBlockSize = global.spriteSize.width * scaleValue * scaleValue // block size scalevalue
 
 
+var latestSelectedMonster = "";
+
 $(document).ready(function(){
 $("body").mousemove(function(e){
  
@@ -728,7 +753,16 @@ $("body").mousemove(function(e){
       }
      
       result = fakeTrack.find( ({mousePos}) => mousePos === gridX + "," + gridY  )
-      if (result !== undefined){ $("#mouse span:last").text(result.id)}else{$("#mouse span:last").text("")}
+      if (result !== undefined){ 
+		$("#mouse span:last").text(result.id)
+		latestSelectedMonster = result
+		$("#miniConsole").text(latestSelectedMonster.id + " | HP" + latestSelectedMonster.HP)
+		
+		}
+		else{
+			$("#mouse span:last").text("")
+			$("#miniConsole").text("")
+			}
      // console.log(result)
      
         //  $("#mouse span:last").text("( e.clientX, e.clientY ) - " + clientCoords);

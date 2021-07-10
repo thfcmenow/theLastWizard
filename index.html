@@ -24,6 +24,7 @@
   <img id="cursor_sel" src="sprites\cursor_sel.png" style="display:none" alt="cursor">
   <img id="cursor_action" src="sprites\cursor_action.png" style="display:none" alt="cursor">
   <img id="vampire" src="sprites\vampire.png" style="display:none" alt="cursor">
+    <img id="horse" src="sprites\horse.png" style="display:none" alt="cursor">
   <img id="mage" src="sprites\mage.png" style="display:none" alt="cursor">
   <img id="mage2" src="sprites\mage2.png" style="display:none" alt="cursor">
   <img id="intro01" src="intro\intro01-min.png" style="display:none" alt="cursor">
@@ -78,7 +79,9 @@
 
 <div id="helper"></div>
 <div id="helperInsult"></div>
-<div id="mouse"><span></span><span></span></div>
+<div id="mouse"><span></span><span></span><p id='miniConsole'></p></div>
+<div id="explosion"></div>
+
 <!-- <div class="circle" id="circle"></div> -->
 
 
@@ -129,8 +132,8 @@
     }(window));
 </script>
 <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+<script src="jsprite.js"></script>
 
-<script src="jquery.imgexplode.min.js"></script>
   <script src="config.js"></script>
   <script src="combat.js"></script>
   <script src="movement.js"></script>

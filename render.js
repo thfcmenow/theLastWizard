@@ -162,12 +162,7 @@ function generateParticle(particlePosX,particlePosY,trackPos=-1,targetIndex=-1,s
   // if you are using trackPos - then direction specified the direction in which to render
   // will use track[...].Facing Left or Right
 
-  // augment particlePosX and particlePosY by scaleRatio
-  particlePosX = particlePosX * scaleValue
-  particlePosY = particlePosY * scaleValue
-
-  console.log("%c " + track[trackPos].y + "_" +        particlePosY,"background-color: black;color:yellow")
-
+  
   if (particlePosX==-1 && particlePosY==-1) // if no origin point then use characters Origin point
   {
       // find players origin square top/left point
@@ -181,6 +176,13 @@ function generateParticle(particlePosX,particlePosY,trackPos=-1,targetIndex=-1,s
       console.log("originY:" + originY)
 
   }
+  
+  // augment particlePosX and particlePosY by scaleRatio
+  particlePosX = particlePosX * scaleValue
+  particlePosY = particlePosY * scaleValue
+
+  //console.log("%c " + track[trackPos].y + "_" +        particlePosY,"background-color: black;color:yellow")
+
 
   // if this is a targetted path spell then tarx and tary come into play
   if (targetIndex > -1)
@@ -200,12 +202,13 @@ function generateParticle(particlePosX,particlePosY,trackPos=-1,targetIndex=-1,s
   }
 
   // play spells sound effect if applicable
-  if (spellType!=="impact"){
+try{
   if (spells[spellType].sound !== undefined)
   {
     playSound(spells[spellType].sound,spells[spellType].vol)
   }
-}
+}catch(err){}
+
   // augment based on direction * scaleValue and dont forget about the screen margin too!
   /*if (trackPos > -1) {
       track[trackPos].Facing == "Left" ? particlePosX = track[trackPos].x - particlePosX : particlePosX = track[trackPos].x + particlePosX
@@ -222,7 +225,7 @@ function generateParticle(particlePosX,particlePosY,trackPos=-1,targetIndex=-1,s
   }
 }
 
-function createParticle(x, y, tarx=-1, tary=-1,spellType,) {
+function createParticle(x, y, tarx=-1, tary=-1,spellType) {
   // Create a custom particle element
   const particle = document.createElement('particle');
   // Append the element into the body
@@ -235,8 +238,8 @@ function createParticle(x, y, tarx=-1, tary=-1,spellType,) {
    particle.style.height = '7px';
    particle.style.background = "red" 
   } else {
-  particle.style.width = "3px";
-  particle.style.height = "3px";
+  particle.style.width = "5px";
+  particle.style.height = "5px";
   particle.style.background = "white" 
   }
 //    particle.style.width = `${size}px`;
@@ -282,16 +285,27 @@ const animation = particle.animate([
 ], {
   // Set a random duration from 500 to 1500ms
   // duration: 500 + Math.random() * 1000,
-  duration: 3000,
+  duration: 2000,
   easing: 'cubic-bezier(0, .9, .57, 1)',
   // Delay every particle with a random value from 0ms to 200ms
     delay: delayAmt
  
 });
+
 animation.onfinish = () => {
   particle.remove();
+  
+// explosion fx
+sp.left = latestSelectedMonster.x + global.margin.value
+sp.top = latestSelectedMonster.y + global.margin.value
+sp1.start()
+
+
+
 };
 }
+
+
 
 
 
