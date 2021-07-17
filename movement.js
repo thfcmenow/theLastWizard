@@ -19,36 +19,85 @@ var currentlySelectedCharacterIndex = 1
 
 // handle keys for endTurn
 function endKeys(e){
+   
+   
 
-    mousePos = getSquare(canvasGrid, e);
-if (e.detail == 1) {
- console.log("end turn")
- $("#helper").hide()
- document.removeEventListener('keydown', endKeys)
-  document.removeEventListener('click',endKeys)
-  ai(currentlySelectedCharacterIndex+1)
+    if (e.detail == 1) {
+        $("#helper").hide()
+        handleInput("remove","endKeys")
+        
+        newTurn()
+     }
+
+
 }
 
-switch(e.keyCode){
-    case 32: // space  
-    console.log("final end turn")
-    $("#helper").hide()
-    document.removeEventListener('keydown', endKeys)
-  document.removeEventListener('click',endKeys)
-    break;
+
+function newTurn(){
+    console.groupCollapsed("movement - newTurn")
+    console.log("NEW TURN:" + currentlySelectedCharacterIndex)
+
+    
+    handleInput("remove","endKeys")
+
+ if (currentlySelectedCharacterIndex == global.noOfPlayers){
+    currentlySelectedCharacterIndex = 1
+} else {currentlySelectedCharacterIndex++}
+
+console.log("%cNEEEWWW TUUUURRRNNNN ::: " + currentlySelectedCharacterIndex,"background-color:yellow;color:black")
+console.log("%cNEEEWWW TUUUURRRNNNN ::: " + playerTrack[currentlySelectedCharacterIndex],"background-color:yellow;color:black")
+console.groupEnd() 
+if (playerTrack[currentlySelectedCharacterIndex-1] == "human"){
+    handleInput("remove","handlelock")
+    handleInput("remove","handleSpells")
+    handleInput("remove","handleCharacterMovement")
+    handleInput("remove","handleSummon")
+    handleInput("remove","strike")
+    handleInput("add","handleMoves")
+    console.log("mouseClickMenu state?", mouseClickMenu)
+    helper("","It is now your turn","yellow")
+    } else { 
+      ai()
+    }
+
+
+          
+   
 }
-}
+
 
 function endTurn(){
-// this function handles all end turn scenarios
+  
+    handleInput("remove","handlelock")
+    handleInput("remove","handleSpells")
+    handleInput("remove","handleCharacterMovement")
+    handleInput("remove","handleSummon")
+    handleInput("remove","strike")
 
-// Select : Move Character : Finish all Moves
+    // deal with the cuurent player ---------------------------------------------------------
+    // remember, playerIndex starts at 0 and currentlyselected starts at 1
+    if (playerTrack[currentlySelectedCharacterIndex-1]=="human")
+    {
+        
+        helper("","Press Mouse Key to End Turn","yellow")
+        handleInput("add","endKeys")
+        
 
-// Select : 4. End Turn
-helper("","Press 0 or Mouse Key to End Turn")
-document.addEventListener('keydown', endKeys)
-document.addEventListener('click',endKeys)
+       // endkeys click to continue on to next turn
+        
+       
+    } else // computer
+    {
+        if (currentlySelectedCharacterIndex == global.noOfPlayers){
+            currentlySelectedCharacterIndex = 1
+        } else {currentlySelectedCharacterIndex++}
+        ai()
+    }
 
+  //   console.log("new current selected index:",currentlySelectedCharacterIndex)
+   // console.log("newturn:",newTurn)
+    
+    
 
 }
 
@@ -91,19 +140,21 @@ function strikePath(minFireX,minFireY,tarx,tary)
     // tarx = (tarx * global.spriteSize.width) + global.margin.value
      // tary = (tary * global.spriteSize.height) + global.margin.value
    
-     console.log("tary before manipulation: ", tary)
+     
      // stepsNeededY = (tary - track[currentlySelectedCharacterIndex].y) / maxFireFrame
      tary > minFireY ?  stepsNeededY = -Math.abs((minFireY - tary) / maxFireFrame) : stepsNeededY = Math.abs((minFireY- tary) / maxFireFrame);
     
      stepsNeededX = ((tarx - minFireX) / maxFireFrame)
      
  
+     console.groupCollapsed("movement - strikepath- logs")
      console.log("tarx:" + tarx)  // [real coordinates]
      console.log("tary:" + tary) // [real coordinates]
      console.log("track[turn].x",minFireX) // the current players X
      console.log("track[turn].y",minFireY) // the current players y
      console.log("stepsNeededX:" + stepsNeededX) // angle for spell track x
      console.log("stepsNeededY:" + stepsNeededY) // angle for spell track y
+     console.groupEnd()
  
      // build the path of the complete spell track
      var listx = [];
@@ -135,9 +186,7 @@ function strikePath(minFireX,minFireY,tarx,tary)
 		 }
             listx.push(mOb)
         }
-        console.log('%c listx ver 2:' + listx,'background-color:black; color:yellow')
-        console.log(listx)
-console.log(listx.length)
+      
 }
 
 
@@ -146,28 +195,71 @@ function strike(e){
     // when you looking for target for ranged spell
 	// explosion test
 
+    
 
+//    console.log(e)
 
     // tenmpsprite needs to be cursor? so track[0]
   // let objIndex = track.findIndex((obj => obj.id == tempsprite.id));
-  document.removeEventListener('keydown', handleSummon)
-  document.removeEventListener('click',handleSummon)
+  
+  handleInput("remove","handleSummon")
   // document.removeEventListener('keydown', handleMoves)
   
+  // if #cancelTurn is pressed
+  if (e.path[0].id == "cancelTurn"){
+      grix.clearRect(0, 0, canvas3.width, canvas3.height);
+      handleInput("remove","strike")
+      helper("","Press Mouse Key to End Turn","yellow")
+      endTurn()
+      return false
+  }
+  
+
   // using mouse to fire spell
-  if (e.detail == 1) {
+  if (e.detail == 1 || e.isTrusted === false) {
     // update cursor position in track[0] and grab a lock
-    mousePos = getSquare(canvasBackground, e);
+   // mousePos = getSquare(canvasBackground, e);
     // track[0].mousePos = (mousePos.x-1) + "," + (mousePos.y-1)
     // cursorPos = track[0].mousePos.split(",")
-    console.log("mousePos: ", mousePos)
+   
+
+    // you can't attack your own creations!
+    if (mainspell !== "shields")
+    {
+    if (latestSelectedMonster.Owner == currentlySelectedCharacterIndex)
+    {
+        helper(track[currentlySelectedCharacterIndex],"You can't attack your own creations!")
+        return false
+    }
+    outOfRange = 0
+    // spell cant fire that far :(
+    firingSourceX = track[currentlySelectedCharacterIndex].x
+    firingRange = (spells[mainspell].Range * global.spriteSize.width * scaleValue) + firingSourceX
+    if (latestSelectedMonster.x > firingRange) {console.warn("out of x range");outOfRange = 1}
+
+    firingSourceY = track[currentlySelectedCharacterIndex].y
+    firingRange = (spells[mainspell].Range * global.spriteSize.height * scaleValue) + firingSourceY
+    if (latestSelectedMonster.y > firingRange) {console.warn("out of y range");outOfRange = 1}
+
+    console.warn("firingSourceX: ", firingSourceX)
+    console.warn("firingRange: ", firingRange)
+    console.warn("spell: ", mainspell)
+
+    // out of range!!
+    if (outOfRange == 1){
+        helper(track[currentlySelectedCharacterIndex],"Out of Range!")
+        return false    
+    }
+
+    // clear target areas
+    grix.clearRect(0, 0, canvas3.width, canvas3.height);
 
     // let user know what we are doing
-    helper(track[currentlySelectedCharacterIndex],"Casting spell - M")
+    helper(track[currentlySelectedCharacterIndex],"Casting spell - ", spells[mainspell].id)
     // find character/monster you have targetted
     // targetIndex = findO(track,"mousePos","index",mousePos.x + "," + mousePos.y)
 	targetIndex = latestSelectedMonster.gKey
- console.log('targetIndex:',targetIndex)
+
     // is the track clear?
     
     minFireX = track[currentlySelectedCharacterIndex].x
@@ -175,12 +267,12 @@ function strike(e){
     tarFireX = mousePos.x * global.spriteSize.width
 	
 	targetFireX = latestSelectedMonster.x
-	console.log("%c -- tarFireX: " + targetFireX, "background-color:purple;color:white")
+
 	
     tarFireY = mousePos.y * global.spriteSize.width
 
 	targetFireY = latestSelectedMonster.y
-	console.log("%c -- tarFireY: " + targetFireY, "background-color:purple;color:white")
+	
     strikePath(minFireX,minFireY,targetFireX,targetFireY)
     trackDup = []
     i = -1;
@@ -191,53 +283,59 @@ while (++i < track.length) {
     trackDup.splice(currentlySelectedCharacterIndex,1) // remove current player
     trackDup.splice(0,1) // remove cursor
 
-    // minFireX = 0   obj = 50 tarFireY = 80
-    // minFireY  = 0    obj = 50   tarFirre
-console.log("mins and tars: " ,minFireX,minFireY,tarFireX,tarFireY,trackDup[1].x,trackDup[1].y)
+  
     for(let l=0;l < trackDup.length; l++)
     {
-        console.log(trackDup[l].x)
-        console.log(trackDup[l].y)
+     
         if (trackDup[l].x >= minFireX && trackDup[l].x <= tarFireX){console.log("xlock")}
         if (trackDup[l].y >= minFireY && trackDup[l].y <= tarFireY){console.log("ylock")}
     } // sweep through and see if in path of fire
     
-  // explodeCircle()
-
-generateParticle(-1,-1)
+    } // end if shields
     // fire ranged spell
-    generateParticle(-1,-1,currentlySelectedCharacterIndex,targetIndex,mainspell)
+    console.log("spellType: ", mainspell)
+    bCheck = 0
+     
+    if (mainspell == "shields")
+    {
+        console.log("shieldshere")
+        $(".shields").css("left", track[currentlySelectedCharacterIndex].x+86)
+        $(".shields").css("top", track[currentlySelectedCharacterIndex].y+54)
+        $(".shields").show()
+        grix.clearRect(0, 0, canvas3.width, canvas3.height);
+        bCheck = 1
+    } 
 
-    // impact of previous spell
-   /* sleep(2000).then(() => { 
-        generateParticle(-1,-1,currentlySelectedCharacterIndex,targetIndex,"impact")
-     })*/
+    if (mainspell == "lightning")
+    {
+        // use different rendering engine for lightning (lightning.js)
+        createRain()
+        setTimeout(function(){
+            $("#c").hide()
+            $(".drop").remove()
+        }, 6000)
+
+        bCheck = 1
+    } 
+
+    if (bCheck==0)  generateParticle(-1,-1,currentlySelectedCharacterIndex,targetIndex,mainspell)
+
+    // combat results
+    if (mainspell!=="shields") combatResults = battle(targetIndex,"magicbolt","track","spells")
+      
+    magicspell = "lightning" ? sleepCount = 2000 : sleepCount = 500
     
-
-    // pixel(track[currentlySelectedCharacterIndex].x,track[currentlySelectedCharacterIndex].y,mousePos.x,mousePos.y) 
-    
-    // here is the current players position
-   // mp = track[currentlySelectedCharacterIndex].mousePos.split(",")
-
-    // if target is more than 1 slot away
-    /*distanceX = cursorPos[0] - mp[0]
-    distanceY = cursorPos[1] - mp[1]
-    console.log("distanceX",distanceX)
-    console.log("distnceY",distanceY)*/
-
-    // summon the monster if within one spot away
-   /* if(distanceX < 2 || distanceY < 2){
-        eval('var ' + monsterSpell + ' = ' + 'new Sprite("' + monsterSpell + '",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"' + monsterSpell + '","down",0,'+ cursorPos[0] +','+ cursorPos[1] +',1,"monster",monsters["' + monsterSpell+ '"].Type)')
-        eval('generateSprite(' + monsterSpell + ',1)')
-        sprites[0].thesprite.src="cursor.png"
-        document.removeEventListener('keydown',handleSummon)
-        document.removeEventListener('click',handleSummon)
+    sleep(sleepCount).then(() => { 
+        if (mainspell !== "shields") helperHitC(track[targetIndex],"-" + combatResults[0])
         endTurn()
-    }*/
+     })
+    
+    
+   
 }
   
 
- switch(e.keyCode){
+ /*switch(e.keyCode){
         case 32: // space  
         //  pixel(tempx,tempy,track[objIndex].x,track[objIndex].y,spell)  
         pixel(tempx,tempy,mX.a*global.spriteSize.width,mY.b*global.spriteSize.height,spell)  
@@ -245,33 +343,16 @@ generateParticle(-1,-1)
         // change cursor graphic to standard 0
         // changeCursor(0)
         sprites[0].thesprite.img = document.getElementById("cursor")
+         handleInput("remove","handlelock")
         document.removeEventListener('keydown', strike)
         document.addEventListener('keydown',handleMoves)
         document.removeEventListener('click', strike)
         document.addEventListener('click',handleMoves)
         break;
 
-       case 38: // up
-       mY.b > 0 ? mY.b -- : ""
-       track[0].y > (0) ? track[0].y -= global.spriteSize.width  : ""
-       break;
-
-       case 40: // down
-       mY.b < (global["boundary"].height/global.spriteSize.width) ? mY.b ++ : ""
-       track[0].y < (global["boundary"].height - global.spriteSize.width)  ? track[0].y += global.spriteSize.width  : ""
-       break;
-
-       case 37: // left
-       mX.a > 0 ? mX.a -- : ""
-       track[0].x > (0) ? track[0].x -= global.spriteSize.width  : ""
-       break;
-
-       case 39: // right
-       mX.a < (global["boundary"].width/ global.spriteSize.width) ? mX.a ++ : ""
-       track[0].x < (global["boundary"].width - global.spriteSize.width) ? track[0].x += global.spriteSize.width  : ""
-       break;
+ 
         
- }
+ }*/
 
 }
 
@@ -285,7 +366,7 @@ var localRange = 0
 
 var cc = 0
 
-console.log(monsterSpell)
+
 
 function handleSummon(e){
     // when you summon a monster you have to place it next to the player
@@ -305,26 +386,38 @@ console.log(e.detail)
 if (e.detail == 1) {
     // update cursor position in track[0] and grab a lock
     mousePos = getSquare(canvasBackground, e);
-    track[0].mousePos = mousePos.x + "," + mousePos.y
-    cursorPos = track[0].mousePos.split(",")
-    console.log("cursorPos2:",cursorPos)
+    
+ //   track[0].mousePos = mousePos.x + "," + mousePos.y
+ //   cursorPos = track[0].mousePos.split(",")
+  //  console.log("cursorPos2:",cursorPos)
 
     // here is the current players position
     mp = track[currentlySelectedCharacterIndex].mousePos.split(",")
-
+    console.log("mousePos: should be the target? ",mousePos)
+    console.log("mp: mp is the casters position ", mp)
     // if target is more than 1 slot away
-    distanceX = cursorPos[0] - mp[0]
-    distanceY = cursorPos[1] - mp[1]
+    distanceX = mousePos.x - mp[0]
+    distanceY = mousePos.y - mp[1]
     console.log("distanceX",distanceX)
     console.log("distnceY",distanceY)
 
     // summon the monster if within one spot away
     if(distanceX < 2 || distanceY < 2){
-        eval('var ' + monsterSpell + ' = ' + 'new Sprite("' + monsterSpell + '",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"' + monsterSpell + '","down",0,'+ cursorPos[0] +','+ cursorPos[1] +',1,"monster",monsters["' + monsterSpell+ '"].Type)')
-        eval('generateSprite(' + monsterSpell + ',1)')
-        sprites[0].thesprite.src="cursor.png"
-        document.removeEventListener('keydown',handleSummon)
-        document.removeEventListener('click',handleSummon)
+
+      /*  rNum = (Math.random() * (10000000 - 10 + 1) ) << 0;
+        
+        
+
+     eval('var ' + monsterSpell + rNum + ' = new Sprite("' + monsterSpell + rNum + '",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"' + monsterSpell + rNum + '","left",0,' + gridX +','+ gridY + ',1,"monster","' + monsterSpell + rNum + '","' + monsterSpell + '")')
+     eval('generateSprite(' + monsterSpell + rNum +',1,' + rNum + ')')*/
+ 
+     summonRandomMonster(monsterSpell)
+
+        //eval('var ' + monsterSpell + ' = ' + 'new Sprite("' + monsterSpell + '",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"' + monsterSpell + '","down",0,'+ cursorPos[0] +','+ cursorPos[1] +',1,"monster",monsters["' + monsterSpell+ '"].Type)')
+        //eval('generateSprite(' + monsterSpell + ',1)')
+        // sprites[0].thesprite.src="cursor.png"
+        
+        handleInput("remove","handleSummon")
         endTurn()
     }
 }
@@ -385,14 +478,14 @@ if (e.detail == 1) {
         // create monster then reset
         eval('var ' + monsterSpell + ' = ' + 'new Sprite("' + monsterSpell + '",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"' + monsterSpell + '","down",0,'+ mX.a +','+mY.b+',1,"monster",monsters["' + monsterSpell+ '"].Type)')
         eval('generateSprite(' + monsterSpell + ',1)')
-        document.removeEventListener('keydown', handleSummon)
+        handleInput("remove","handleSummon")
        // tempsprite.img = document.getElementById("cursor")
       //  tempsprite.src="cursor.png"
        // drawText("clear","canvasConsole")
        sprites[0].thesprite.src="cursor.png"
        // generateSprite(tempsprite,0)
-       document.addEventListener('keydown',handleMoves)
-       document.addEventListener('click',handleMoves)
+       handleInput("add","handleMoves")
+       
        console.log("space bar press under handle summon, shif to handlemoves")
         break;
 
@@ -400,34 +493,201 @@ if (e.detail == 1) {
     console.groupEnd()
 }
 
+function supportForMovement(type='monster'){
+   // display blocks that the character can move to
+   pss = global.spriteSize.width * scaleValue
+   grix.fillStyle = "#a4d687";
+   grix.globalAlpha = 0.2;
+
+   // if we are moving a character or we are targetting a ranged spell
+   type == "monster" ? whom = track[latestSelectedMonster.gKey] : whom = spells[mainspell]
+console.log(type)
+console.log("whom.range" + whom.Range)
+
+// add x and y of owners position so we know where the spelll is being cast from
+if (type=="spell"){
+    whom.x = track[currentlySelectedCharacterIndex].x
+    whom.y = track[currentlySelectedCharacterIndex].y
+}
+  /* vRange = parseInt(track[latestSelectedMonster.gKey].Range)
+   vRangeP = vRange * (global.spriteSize.width * scaleValue)
+   calcLeft = track[latestSelectedMonster.gKey].x - (track[latestSelectedMonster.gKey].Range*global.spriteSize.width)
+   calcTop = track[latestSelectedMonster.gKey].y - (track[latestSelectedMonster.gKey].Range*global.spriteSize.height)*/
+
+   vRange = parseInt(whom.Range)
+   vRangeP = vRange * (global.spriteSize.width * scaleValue)
+   calcLeft = whom.x - (whom.Range*global.spriteSize.width)
+   calcTop = whom.y - (whom.Range*global.spriteSize.height)
+   maxLeft = (cats.width) * scaleValue
+   maxTop = (cats.height) * scaleValue
+   
+   if (calcLeft < 0)
+   {
+       Left = 0
+       LeftLength = ((whom.Range*global.spriteSize.width) * 2)+global.spriteSize.width + calcLeft
+   } else {
+       Left = calcLeft
+       LeftLength = ((whom.Range*global.spriteSize.width) * 2)+global.spriteSize.width*scaleValue
+   }
+
+   if (LeftLength > maxLeft){
+    Left = calcLeft
+    calcUpperLeft = LeftLength - maxLeft
+    LeftLength = calcUpperLeft
+   }
+
+   if (calcTop < 0){
+    Top =  0
+    TopLength =  ((whom.Range*global.spriteSize.height) * 2)+global.spriteSize.height + calcTop
+   } else {
+    Top = calcTop
+    TopLength = ((whom.Range*global.spriteSize.height) * 2)+global.spriteSize.height*scaleValue
+   }
+
+   if (TopLength > (maxTop-(whom.range*global.spriteSize.height))){
+    Top = calcTop
+    calcUpperTop = TopLength - maxTop
+    TopLength = calcUpperTop
+   }
+
+   grix.fillRect(Left, Top, LeftLength, TopLength); 
+   
+}
+
 localRange=0
 function handleCharacterMovement(e,spell) {
+    
+    handleInput("remove","handlelock")
+    
 
 // get the character using track and the cursor position
 
 // objS = track.findIndex(objS => objS.mousePos === theCursor.x + "," + theCursor.y);
 // the character selected on menu load should be the character you are moving
 // console.log(currentlySelectedCharacterIndex)
-objS = currentlySelectedCharacterIndex
 
-mousePos = getSquare(canvasGrid, e);
+// swwitch olver to latestSelectedMonster.gKey instead of currentlySelectedCharacterIndex
+
 if (e.detail == 1) {
-    mp = track[objS].mousePos.split(",")
-    limitrangeX = mousePos.x - mp[0]
-    limitrangeY = mousePos.y - mp[1]
-    if(limitrangeX == track[objS].Range || limitrangeY == track[objS].Range){
-    if(localRange < track[objS].Range)
+    helper("","Select a block to move to")
+    // clear tile helpers
+    grix.clearRect(0, 0, canvas3.width, canvas3.height);
+
+   
+
+    // where the character is going
+    mousePos = getSquare(canvasGrid, e);
+    console.log(mousePos)
+
+    // where the character is currently at
+  //  mp = track[currentlySelectedCharacterIndex].mousePos.split(",")
+    mp = track[latestSelectedMonster.gKey].mousePos.split(",")
+
+    limitrangeX = mousePos.x - mp[0] // should be 1
+    limitrangeY = mousePos.y - mp[1] // should be 1
+   console.log("mp",mp)
+    console.log("limitrangeX = ", limitrangeX)
+    console.log("limitrangeY = ",limitrangeY)
+
+   // startPosX = track[currentlySelectedCharacterIndex].x
+   // startPosY = track[currentlySelectedCharacterIndex].y
+   startPosX = track[latestSelectedMonster.gKey].x
+   startPosY = track[latestSelectedMonster.gKey].y
+    moveIntervalX = (mousePos.x * global.spriteSize.width) / 525
+    moveIntervalY = (mousePos.y * global.spriteSize.height) / 525
+    console.log("_moveIntervalX:" + moveIntervalX)
+    console.log("_moveIntervalY:" + moveIntervalY)
+    console.log("Starting Pos: " + startPosX + "," + startPosY)
+    console.log("Ending Pos: " + (mousePos.x * global.spriteSize.width) + "," + (mousePos.y * global.spriteSize.height))
+
+   console.log("local range: ", localRange)
+   console.log("latestmonster range: ",track[latestSelectedMonster.gKey].Range)
+
+   if(limitrangeX > track[latestSelectedMonster.gKey].Range && limitrangeY > track[latestSelectedMonster.gKey].Range){
+    console.log("you can't move there")
+   }
+
+    if(limitrangeX <= track[latestSelectedMonster.gKey].Range && limitrangeY <= track[latestSelectedMonster.gKey].Range){
+    if(localRange < track[latestSelectedMonster.gKey].Range)
     {
+    //  console.log("increment local range")
      localRange ++
-     track[objS].x = mousePos.x * global.spriteSize.width
-     track[objS].y = mousePos.y * global.spriteSize.height
-     if (localRange == track[objS].Range) {
-          maxReached = "<br>MAXED Movement";
-          document.removeEventListener('keydown',handleCharacterMovement)
-          document.removeEventListener('click',handleCharacterMovement)
+    
+     if (localRange <= track[latestSelectedMonster.gKey].Range) {
+        //  maxReached = "<br>MAXED Movement";
+
+        // you are clicking on?  
+        targetLock = track.find(
+            ({mousePos}) => mousePos == gridX + "," + gridY
+        )
+
+        if (targetLock !== undefined){
+        if (currentlySelectedCharacterIndex !== targetLock.Owner)
+        {
+            console.warn("You can attack this character")
+            combatResults = battle(targetLock.gKey,currentlySelectedCharacterIndex,"track","track")
+            helperHitC(latestSelectedMonster,"-" + combatResults[0])
+            playSound("audio/punch.wav",1.0)
+            sleep(300).then(() => { 
+                playSound("audio/punch.wav",1.0)
+             })
+            
+        }
+    }
+
+          // update track with new pos
+          track[latestSelectedMonster.gKey].mousePos = gridX + "," + gridY
+          console.log("updated position gridx andy ", gridX + "," + gridY)
+          
+          // animate on move
+        /*  amp = 0
+          var pMovement = setInterval(function(){
+            amp++
+            track[currentlySelectedCharacterIndex].x = (track[currentlySelectedCharacterIndex].x) + moveIntervalX
+            track[currentlySelectedCharacterIndex].y = (track[currentlySelectedCharacterIndex].y) + moveIntervalY
+            if (amp == 525) clearInterval(pMovement)
+        },1) */
+        
+        //fade out
+        function callback(){
+         track[latestSelectedMonster.gKey].x = mousePos.x * global.spriteSize.width
+         track[latestSelectedMonster.gKey].y = mousePos.y * global.spriteSize.height
+         amp = 0
+        var pMovement = setInterval(function(){
+        amp = amp + 0.11
+        sprites[latestSelectedMonster.gKey].opacity = amp
+        if (amp > 0.99) 
+        {
+      //      sp7.left = track[currentlySelectedCharacterIndex].x
+      //      sp7.top = track[currentlySelectedCharacterIndex].y
+      //      sp8.start()
+            clearInterval(pMovement)
+       
+        }
+        },10)
+        }
+        amp = 1
+        var pMovement = setInterval(function(){
+        amp = amp - 0.01
+        sprites[latestSelectedMonster.gKey].opacity = amp
+        if (amp < 0.01) 
+        {
+            clearInterval(pMovement)
+        callback()
+        }
+        },10)
+        
+        
+        // console.log(track)
+        // no animation
+        handleInput("remove","handleCharacterMovement")
+        $(".shields").fadeOut()
+          localRange = 0
+          console.groupEnd()
           endTurn()
      } else {
-     helper(track[objS],"MP: " + localRange + " out of " + track[objS].Range + maxReached)
+  //      console.log("updating helper: " + objS)
+    // helper("","MP: " + localRange + " out of " + track[latestSelectedMonster.gKey].Range + maxReached)
      }
     }}
 }
@@ -435,7 +695,7 @@ if (e.detail == 1) {
 // console.log("objS: handlecharactermovement",objS)
 switch(e.keyCode){
 
-        case 38: // up
+     /*   case 38: // up
         current_state = "up";
         if(mY.b > 0){
         if (localRange < track[objS].Range) { 
@@ -503,9 +763,45 @@ switch(e.keyCode){
             // helper(track[objS],"MP: " + localRange + " out of " + track[objS].Range + maxReached)
             endTurn() 
         }
-        break;
+        break;*/
 
   
+}
+}
+
+function handleMonsterMenu(e){
+
+    switch (mouseClickMenu){
+        case "0":          e.keyCode = 48;        break;
+        case "1":          e.keyCode = 49;        break;
+        case "2":          e.keyCode = 50;        break;
+        case "3":          e.keyCode = 51;        break;
+        case "4":          e.keyCode = 52;        break;
+        case "5":          e.keyCode = 53;        break;
+        case "6":          e.keyCode = 54;        break;
+        case "7":          e.keyCode = 55;        break;
+        case "8":          e.keyCode = 56;        break;
+        case "9":          e.keyCode = 57;        break
+}
+
+switch(e.keyCode){
+    case 48: // 1
+    console.log("move")
+           
+            playerMenu("clear")
+            handleInput("add","handleCharacterMovement")
+            handleInput("remove","handleMonsterMenu")
+            handleInput("remove","handlelock")
+            // paint grid range
+            supportForMovement()
+
+          
+   break;
+
+    case 49: // 1
+    console.log("1")
+   break;
+
 }
 }
 
@@ -513,42 +809,18 @@ switch(e.keyCode){
  function handleSpells(e){
 
     
-   /* switch (mouseClickMenu){
-
-        case "1":  // menu item 2 - send character code for 2
-        e.keyCode = 50
-        break;
-
-        case "2":  // menu item 3 - send character code for 3
-        e.keyCode = 51
-        break;
-
-        case "3":  // menu item 4 - send character code for 4
-        e.keyCode = 52
-        break;
-}*/
-
+  
 
     strikeOpponent = (spell) => {
         $(".aMenu").hide()
-       // sprites[0].thesprite.img = document.getElementById("cursor_action")
-       // generateSprite(sprites[0].thesprite,0)
-       
-        sprites[0].thesprite.img = document.getElementById("cursor_action")
-
-        console.log("strikeOpponent, spell: ", spell)
-
-        // strike can't see spell so make it global
         mainspell = spell
-
-        // change cursor graphic to 2 action/strike
-        // changeCursor(2)
-      //  drawText("mage casting spell: " + spell + " | range: " + spells[spell].range,"canvasConsole")
-        document.removeEventListener('keydown',handleSpells)
-        document.removeEventListener('click',handleSpells)
-        document.addEventListener('keydown', strike)
-        document.addEventListener('click', strike)
-        console.log("striekoponent under handlespells: strike ")
+        supportForMovement('spell')
+        handleInput("remove","handleSpells")
+        handleInput("add","strike")
+        if (mainspell == "shields"){
+            $(".playArea").click()
+        } 
+        
     }
 
     monsterSummon = (spell) => {
@@ -559,10 +831,10 @@ switch(e.keyCode){
         console.log("spell:",spell)
         monsterSpell = spell
         console.log("monsterSpell",monsterSpell)
-        document.addEventListener('keydown', handleSummon)
-        document.removeEventListener('keydown',handleSpells)
-        document.addEventListener('click', handleSummon)
-        document.removeEventListener('click',handleSpells)
+        helper("","Select a block to summon creature","yellow")
+        handleInput("add","handleSummon")
+        handleInput("remove","handleSpells")
+       
         console.log("monstersummon under handlespells: handleSummon")
         playerMenu(0,0,"clear") // hide menu
         // actual rendering part has to wait until player determines where to place monster
@@ -570,7 +842,7 @@ switch(e.keyCode){
         // eval('var ' + spell + ' = ' + 'new Sprite("' + spell + '",64,128,64,64,"' + spell + '","down",0,2,2,1,"monster",monsters["' + spell + '"].Type)')
         // eval('generateSprite(' + spell + ',1)')
         $(".aMenu").hide()
-        sprites[0].thesprite.img = document.getElementById("cursor")
+        // sprites[0].thesprite.img = document.getElementById("cursor")
         console.log("sprites",sprites)
         // processMovement(sprites[0].thesprite)
         console.groupEnd()
@@ -585,6 +857,7 @@ switch(e.keyCode){
             return lock
     }
     
+   
     switch (mouseClickMenu){
         case "1":          e.keyCode = 49;        break;
         case "2":          e.keyCode = 50;        break;
@@ -616,7 +889,7 @@ switch(e.keyCode){
 
     case 49: // 1
      spell = playerSpellBooks[0].spells[0] // this is an array so 0 would = 1  
-     console.log("spellCasting",spell)
+     
      if (spells[spell].type=="strike") strikeOpponent(spell)
      if (spells[spell].type=="monster") 
      {
@@ -627,7 +900,7 @@ switch(e.keyCode){
 
     case 50: // 2
      spell = playerSpellBooks[0].spells[1] 
-     console.log("spellCasting",spell)
+     
      if (spells[spell].type=="strike") strikeOpponent(spell)
      if (spells[spell].type=="monster") 
      {
@@ -638,7 +911,7 @@ switch(e.keyCode){
 
     case 51: // 3
      spell = playerSpellBooks[0].spells[2] 
-     console.log("spellCasgin",spell)
+     
      if (spells[spell].type=="strike") strikeOpponent(spell)
      if (spells[spell].type=="monster") 
      {
@@ -649,7 +922,7 @@ switch(e.keyCode){
 
     case 52: // 4
      spell = playerSpellBooks[0].spells[3] 
-     console.log("spellCasgin",spell)
+  
      if (spells[spell].type=="strike") strikeOpponent(spell)
      if (spells[spell].type=="monster") 
      {
@@ -660,7 +933,7 @@ switch(e.keyCode){
 
     case 53: // 5
      spell = playerSpellBooks[0].spells[4] 
-     console.log("spellCasgin",spell)
+    
      if (spells[spell].type=="strike") strikeOpponent(spell)
      if (spells[spell].type=="monster") 
      {
@@ -718,7 +991,6 @@ switch(e.keyCode){
 
 function handlelock(e){
 
-// console.log("mouseEvents::", mouseClickMenu)
     switch (mouseClickMenu){
 
         case "1":  // menu item 2 - send character code for 2
@@ -749,31 +1021,30 @@ function handlelock(e){
 
             
             case 50: // 2 Select Spells
-           
             playSound("audio/menuselect.mp3")
-            document.removeEventListener('keydown', handlelock)
-            document.removeEventListener('click', handlelock)
+            handleInput("add","handleSpells")
+            handleInput("remove","handlelock")
             playerMenu("SelectSpells")
-            document.addEventListener('keydown', handleSpells)
-            document.addEventListener('click', handleSpells)
-            console.log("Key 2 under handleLock: ","handleSpells")
-            break;
+            helper("","Selecting Spell")
+             break;
 
             case 51: // 3 Movement key
-            // console.log("HEEERREE3")
+            console.log("move")
+            console.log("MOVEMENT KEY")
+           // paint grid range
+           supportForMovement()
+           console.log("ENDMOVEMENTKEY")
             playerMenu("clear")
-            document.removeEventListener('keydown', handlelock)
-            document.removeEventListener('click', handlelock)
-            document.addEventListener('keydown', handleCharacterMovement)
-            document.addEventListener('click', handleCharacterMovement)
-            // console.log("Key 3 under handleLock: ","handleCharacterMovememnet")
-
-            // hide the cursor - we mark it as 'dead' so it wont render
-            // with handleCharacterMovement - the character then becomes the cursor
-            track[0].dead="yes" // the cursor should always be track[0] but may need to make this dynamic
+            handleInput("add","handleCharacterMovement")
+            handleInput("remove","handlelock")
+              
+            
+         
             break;
 
             case 52: // 4 End Turn
+            handleInput("remove","handlelock")
+           
             playerMenu("clear")
             endTurn()
             /* playSound("audio/menucancel.wav")
@@ -784,10 +1055,7 @@ function handlelock(e){
             $(".aMenu").hide() */
            
 
-            document.removeEventListener('keydown',handlelock)
-            document.removeEventListener('click',handlelock)
-            document.addEventListener('keydown', handleMoves)
-             document.addEventListener('click', handleMoves)
+           
             console.log("Key 4 under handlelock: ","handleMoves")
             // processMovement(sprites[0].thesprite)
             break;
@@ -814,7 +1082,11 @@ let spaceFirst = (sprite,mouse=0) => {
 
 function handleMoves(e) // only player at the moment track[0] for player 1
     {
-console.groupCollapsed("handleMoves")
+
+            
+        
+
+console.groupCollapsed("movement - handleMoves")
     var prev_state=""
 
     var smx = 0;
@@ -823,6 +1095,7 @@ console.groupCollapsed("handleMoves")
     
     // update track object
     mousePos = getSquare(canvasGrid, e);
+   // console.log("%c mousePos: " + mousePos.x,"background-color:black,color:white")
     objIndex = 0
     if (e.detail == 1) e.keyCode = 32
 
@@ -830,7 +1103,7 @@ console.groupCollapsed("handleMoves")
   switch(e.keyCode) {
     case 32: // space
  
-    if (e.detail == 0)
+  /*  if (e.detail == 0)
         { 
             
             // 0 is keyboard
@@ -844,22 +1117,29 @@ console.groupCollapsed("handleMoves")
 
 
         } 
-        else 
-        { 
+        else */
+   if (e.detail ==1)     { 
+
+    
+
             // 1 is mouse
-            smx = parseInt(mousePos.x)
-            smy = parseInt(mousePos.y)
+          smx = parseInt(mousePos.x)
+          smy = parseInt(mousePos.y) 
 
             // update cursor position for global variable (track cursor) too
             mX.a = smx
             mY.b = smy
         
             // update cursor position
-            track[0].x = smx*global.spriteSize.width
-            track[0].y = smy*global.spriteSize.width
+          //  track[0].x = smx*global.spriteSize.width
+         //   track[0].y = smy*global.spriteSize.width 
+           // track[0].x = smx
+           // track[0].y = smy
         
             // what is in the selected box?
-            aObj = findO(track,"mousePos","full",smx + "," + smy)
+            aObj = findO(track,"mousePos","full",mX.a + "," + mY.b)
+
+            console.log("%c aobj lock in handleMoves: " + aObj,"color:blue")
            
           // console.log(">>>>>aobj:",aObj)
          //  console.log(">",potentialIndex,"<< potential Index")
@@ -878,25 +1158,28 @@ console.groupCollapsed("handleMoves")
          }
          console.log('aobk:',aObj)
         // console.log(aObj.gKey)
+        console.log('umm')
+
+    // if a fellow monster has been selected
+    if (aObj !== undefined && aObj.CLASS==="monster" && aObj.Owner==currentlySelectedCharacterIndex)
+    {
+        playSound("audio/menuselect.mp3")
+        playerMenu("monsterMenu")
+        helper("","Monster Menu")
+        handleInput("remove","handleMoves")
+        handleInput("add","handleMonsterMenu")
+    }
+
     // if a player has been selected
     if (aObj !== undefined && aObj.CLASS==="player" && aObj.gKey==currentlySelectedCharacterIndex)
     {
+        console.log("Player Selected")
         playSound("audio/menuselect.mp3")
-       // sprite.src="cursor_sel.png"
-        // sprite.img = document.getElementById("cursor_sel")
-        sprites[0].thesprite.src="sprites/cursor_sel.png"
+    //    sprites[0].thesprite.src="sprites/cursor_sel.png"
         playerMenu("gameMenu")
-
-        // update canvasConsole
-        // drawText(gameBoard["x" + smx + "y" + smy],"canvasConsole")
-
-        // menu selected so move keyboard state to handlelock and mouse
-       
-        document.removeEventListener('keydown',handleMoves)
-        document.removeEventListener('click',handleMoves)
-        document.addEventListener('keydown', handlelock)
-        document.addEventListener('click', handlelock)
-
+        helper("","Player Menu")
+        handleInput("remove","handleMoves")
+        handleInput("add","handlelock")
         console.log("END Player Selected under handleMoves: ","handlelock")
     }
     
@@ -969,181 +1252,30 @@ console.groupCollapsed("handleMoves")
     console.groupEnd()
 }
 
-function processMovement(sprite,keys="0")
+// handle all input
+function handleInput(type,id){
+
+    debug.console == 1 ? console.log("%c *** HANDLE INPUT *** " + type + "-" + id,"background-color:black;color:yellow") : ""
+
+    debug.console == 1 ? $("#mouseEvents").append(type + " - " + id + "<br>") : ""
+
+    if (type=="add")
+    {
+      eval("document.addEventListener('click'," + id + ")")
+    //  document.addEventListener('click', id)
+    }
+  
+    if (type=="remove")
+    {
+        eval("document.removeEventListener('click'," + id + ")")
+     }
+  
+  }
+
+/*function processMovement(sprite,keys="0")
 {
-    document.addEventListener('keydown', handleMoves)
+   
     document.addEventListener('click', handleMoves)
     console.log("END processMovement: ","handleMoves")
 
-}
-
-
-// mouse
-
-
-/*canvasGrid.addEventListener('click', function(evt) {
-    var mousePos = getSquare(canvasGrid, evt);
-    let mouseX = mousePos.x
-    let mouseY = mousePos.y
-    console.log(mousePos)
-   
-    // what is in the current block (I use track)
-    let whatisthere = findO(track,"mousePos","full",mouseX+","+mouseY)
-    var foo = processMovement()
-    foo.handleMoves(32)
-    keyCode = 32;
-
-    // fillSquare(cde, mousePos.x, mousePos.y)
-  }, false);*/
-
-
-
-/*
-
-
-function processMovement(sprite)
-{
-var prev_state=""
-
-console.log(sprite)
-
-document.addEventListener('keydown', handleMoves)
-
-function handleMoves(e)
-{
-
-    // update track object
-    let objIndex = track.findIndex((obj => obj.id == sprite.id));
-  
-  switch(e.keyCode) {
-    case 32: // space
-       // change icon of cursor! should be one freakin line!
-      
-      if (sprite.src == undefined || sprite.src == "cursor.png")
-       {
-        sprite.src="cursor_sel.png"
-        sprite.img = document.getElementById("cursor_sel")
-        document.removeEventListener('keydown',handleMoves)
-        // position of cursor
-        let objZ = track.find(objZ => objZ.id === sprite.id);
-       let smx=objZ.x/64
-       let smy=objZ.y/64
-        console.log("y",objZ.y/64)
-        
-      //   if (gameBoard["x" + smx + "y" + smy].length > 3)
-      //  {
-            generateSprite(sprite,0)
-      //  }
-        
-       } else {
-        sprite.src="cursor.png"
-        sprite.img = document.getElementById("cursor")
-        document.removeEventListener('keydown',handleMoves)
-        generateSprite(sprite,0)
-
-       }
-        break;
-    case 38: // up
-      current_state = "up";
-       // if (prev_state == "left") current_state = "left"
-        // if (prev_state == "right") current_state = "right"
-        track[objIndex].y > (0) ? track[objIndex].y -= 64  : ""
-       // iconhero.position.y > (0) ? iconhero.position.y -= 64  : ""
-        break;
-    case 40: // down
-       current_state = "down";
-       // if (prev_state == "left") current_state = "left"
-       // if (prev_state == "right") current_state = "right"
-       track[objIndex].y < (global["boundary"].height - 64)  ? track[objIndex].y += 64  : ""
-        // iconhero.position.y < (global["boundary"].height - 64)  ? iconhero.position.y += 64  : ""
-        break;
-    case 37: // left
-        // current_state = 'left';
-        // hero.position.x > (0) ? hero.position.x -= 64  : ""
-        // iconhero.position.x > (0) ? iconhero.position.x -= 64  : ""
-       // prev_state = current_state
-        current_state = 'left';
-        track[objIndex].x > (0) ? track[objIndex].x -= 64  : ""
-        break;
-    case 39: // right
-        current_state = 'right';
-        track[objIndex].x < (global["boundary"].width - 64) ? track[objIndex].x += 64  : ""
-
-        //track[objIndex].x += 64
-        
-        
-        //iconhero.position.x < (global["boundary"].width - 64) ? iconhero.position.x += 64  : ""
-        //prev_state = current_state
-        break;
-case 80: // right test for p
-console.log('p')
-        current_state = 'right';
-        track[objIndex].x < (global["boundary"].width - 64) ? track[objIndex].x += 64  : ""
-
-        
-    }
-}
-
-}
-
-
-/*
-var cframeWidth;
-var cframeHeight;
-cimage = new Image();
-cimage.onload = function() {
-cimageWidth = this.width;
-cimageHeight = this.height;
-cframeWidth = 64;
-cframeHeight = cimage.height / 3;
-};
-cimage.src = "vampire.png"
-var ccurrent_state = 'down';
-var ccurrent_frame = 0;
-var chero = {
-position: {x: 0, y: 0}
-};
-
-var iconframeWidth;
-var iconframeHeight;
-iconimage = new Image();
-iconimage.onload = function() {
-iconimageWidth = this.width;
-iconimageHeight = this.height;
-iconframeWidth = 64;
-iconframeHeight = iconimage.height / 2;
-};
-iconimage.src = "cursor.png"
-var iconcurrent_state = 'down';
-var iconcurrent_frame = 0;
-var iconhero = {
-position: {x: 0, y: 0}
-};
-var iconanimations = {
-left: [{x: 0, y: 0}, {x: 0, y: 1}],
-right: [{x: 0, y: 0}, {x: 0, y: 1}],
-down: [{x: 0, y: 0}, {x: 0, y: 1}],
-up: [{x: 0, y: 0}, {x: 0, y: 1}],
-};
-
-var frameWidth;
-var frameHeight;
-image = new Image();
-image.onload = function() {
-imageWidth = this.width;
-imageHeight = this.height;
-frameWidth = 64;
-frameHeight = image.height / 3;
-};
-image.src = "idle_mage.png"
-var current_state = 'down';
-var current_frame = 0;
-var hero = {
-position: {x: 512, y: 256}
-};
-/*var animations = {
-left: [{x: 0, y: 0}, {x: 1, y: 0}, {x: 0, y: 1}, {x: 1, y: 1}, {x: 0, y: 2}, {x: 1, y: 2}],
-right: [{x: 2, y: 0}, {x: 3, y: 0}, {x: 2, y: 1}, {x: 2, y: 2}, {x: 2, y: 2}, {x: 3, y: 2}],
-down: [{x: 2, y: 0}, {x: 3, y: 0}, {x: 2, y: 1}, {x: 2, y: 2}, {x: 2, y: 2}, {x: 3, y: 2}],
-up: [{x: 0, y: 0}, {x: 1, y: 0}, {x: 0, y: 1}, {x: 1, y: 1}, {x: 0, y: 2}, {x: 1, y: 2}]
-};*/
+}*/

@@ -1,6 +1,6 @@
 # The Last Wizard
 
-### Friday 06/25/2021 - Day 9 - 
+### Friday 06/25/2021 - Day 9 - test
 
 Code found: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_Objects#defining_getters_and_setters
 

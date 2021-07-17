@@ -24,10 +24,47 @@ overflow: hidden;
 z-index:300
 }
 
+.zelda{
+  font-family: 'Zelda';
+}
+
+.drop {
+  background:-webkit-gradient(linear,0% 0%,0% 100%, from(rgba(13,52,58,1) ), to(rgba(255,255,255,0.6))  );
+  background: -moz-linear-gradient(top, rgba(13,52,58,1) 0%, rgba(255,255,255,.6) 100%);
+  opacity:
+	width:1px;
+	height:89px;
+	position: absolute;
+	bottom:200px;
+	-webkit-animation: fall .63s linear infinite;
+  -moz-animation: fall .63s linear infinite;
+}
+
+/* animate the drops*/
+@-webkit-keyframes fall {
+	to {margin-top:900px;}
+}
+@-moz-keyframes fall {
+	to {margin-top:900px;}
+}
+
 #helper{
   font-family: 'Zelda';
   position:absolute;
   background-color:black;
+  color:white;
+  font-size:14px;
+  z-index:18;
+  padding:7px;
+  border-radius: 5px;
+  /* border: 1px solid rgb(255, 255, 255);*/
+  opacity: 1
+}
+
+#helperHit{
+  font-family: 'Zelda';
+  position:absolute;
+  background-color:rgb(114, 16, 16);
   color:white;
   font-size:14px;
   z-index:18;
@@ -96,8 +133,9 @@ z-index:300
 margin-top: 300px;
 
 }
+*/
 
-
+/*
 .wrapper {
     width:100%;
     height:100%
@@ -254,13 +292,17 @@ html, body {
 
 /* menu------------------------------------------------------- */
 main {
-  
-  display: flex;
+  margin-top:150px !important;
+ display: flex; 
     
   flex-direction: column;
   transform: rotatex(10deg);
   -webkit-animation: rotateAngle 6s linear infinite;
           animation: rotateAngle 6s linear infinite;
+}
+
+.menuItem:hover {
+  background-color:rgba(253, 216, 53, 0.5);
 }
 
 button {
@@ -744,5 +786,34 @@ body .particletext.sunbeams > .particle {
   }
   6%, 15%, 24%, 28%, 48%, 55%, 78%, 82%, 99% {
     opacity: 1;
+  }
+}
+
+.shake {
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 2px, 0);
+  }
+  20%,
+  80% {
+    transform: translate3d(2px, 5px, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 10px, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
   }
 }

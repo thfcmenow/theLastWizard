@@ -131,7 +131,7 @@ var mainSequence = setInterval(function(){
                             
           //  console.log(tsprite.thesprite.img,animations[tsprite.id][tsprite.thesprite.current_state][current_frame].x * tsprite.thesprite.frameWidth,animations[tsprite.id][tsprite.thesprite.current_state][current_frame].y * tsprite.thesprite.frameHeight,tsprite.thesprite.frameHeight,tsprite.thesprite.frameWidth,obj.x,obj.y,tsprite.thesprite.frameWidth,tsprite.thesprite.frameHeight)
 
-          if (obj !== undefined){
+          
               if (obj.dead  !== "yes")     // if creature is not dead, then render
               {
               if (tsprite.opacity < 1) {
@@ -140,7 +140,6 @@ var mainSequence = setInterval(function(){
               ctx.drawImage(tsprite.thesprite.img,animations[tsprite.thesprite.root][tsprite.thesprite.current_state][current_frame].x * tsprite.thesprite.frameWidth,animations[tsprite.thesprite.root][tsprite.thesprite.current_state][current_frame].y * tsprite.thesprite.frameHeight,tsprite.thesprite.frameHeight,tsprite.thesprite.frameWidth,obj.x,obj.y,tsprite.thesprite.frameWidth,tsprite.thesprite.frameHeight)
               //ctx.drawImage(tsprite.thesprite.img,animations[tsprite.id][tsprite.thesprite.current_state][current_frame].x * tsprite.thesprite.frameWidth,animations[tsprite.id][tsprite.thesprite.current_state][current_frame].y * tsprite.thesprite.frameHeight,tsprite.thesprite.frameHeight,tsprite.thesprite.frameWidth,obj.x,obj.y,tsprite.thesprite.frameWidth,tsprite.thesprite.frameHeight)
               }
-            }
             });
         
 
@@ -153,39 +152,7 @@ var mainSequence = setInterval(function(){
           }   
             
  }, 1000/10); 
- //}, 500);  
- 
-colorRef = ["","blue","red"]
-
- // auto - draww a line under each player and players creations to indicate who they belong to
- setInterval(updateOwners, 200)
- 
- function updateOwners(){
-
-  canc.clearRect(0,0,canvasChar.width,canvasChar.height)
-
- Object.entries(track).forEach(entry => {
- // grix.clearRect(0,0,gridHelp.width,gridHelp.height)
-
-
- 
-   if (entry[1].Owner !== undefined)
-   {
-     
-
-    canc.fillStyle = colorRef[entry[1].Owner]
-    tmpHt = entry[1].MaxHP - entry[1].HP
-    factor =  global.spriteSize.height / entry[1].MaxHP
-    rst = global.spriteSize.height-(tmpHt*factor)
-    if (rst < 0) rst = 0
-    canc.fillRect(entry[1].x + global.spriteSize.width, entry[1].y,3 , rst); 
-    } 
-   
-  
-   // drawGrid(cde);
- })
- }
-
+ //}, 500);     
 }
 
 // particle generator
@@ -263,9 +230,8 @@ try{
  
   p=40 // loop count
   console.log("p",p)
-  console.log(particlePosX, particlePosY,tarx,tary,spellType);
   for (let i = 0; i < p; i++) {
-    createParticle(particlePosX, particlePosY,tarx+global.margin.value,tary+global.margin.value,spellType);
+    createParticle(particlePosX, particlePosY,tarx,tary,spellType);
   }
   console.groupEnd()
 }
@@ -320,8 +286,7 @@ if (pflag==true) {
 
 // console.log("%c destinationXY: " + destinationX + " - " + destinationY, "color:blue")
 
-delayAmt = spells[spellType].delayAmt
-delayAmt=="random" ? delayAmt=Math.random() * 1200 : delayAmt
+// spellType=="magicbolt" ? delayAmt=200 : delayAmt=Math.random() * 1200
 
 // Store the animation in a variable because we will need it later
 const animation = particle.animate([
@@ -342,8 +307,7 @@ const animation = particle.animate([
   duration: 500,
   easing: 'cubic-bezier(0, .9, .57, 1)',
   // Delay every particle with a random value from 0ms to 200ms
-  // delay: spells[spellType].delayAmt
-  delay: delayAmt
+    delay: spells[spellType].delayAmt
  
 });
 

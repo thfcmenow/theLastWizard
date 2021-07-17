@@ -11,6 +11,17 @@ const menus =
                    "contents" :
                    ["Examine Spells","Select Spell","Move Character","End Turn","View Board"]
                 
+               },
+               "monsterMenu":
+               {
+                   "background-color":"gray",
+                   "border-color":"gray",
+                   "border-width":"1px",
+                   "fontsize": "18px",
+                   "launchSound":"",
+                   "contents" :
+                   ["Move Monster","Attack","Fire Ranged Attack","End Turn"]
+                
                }
 }
 
@@ -38,14 +49,17 @@ function posMenuHelp(){
 
 // playerMenu((smx*64)+80,(smy*64)+80,"gameMenu","13px",gameBoard["x" + smx + "y" + smy])
 function playerMenu(menu,player=1){
-console.group("playerMenu")
+console.groupCollapsed("menu - playerMenu")
     var lock = "";
 console.warn("warn:",menu)
     if (menu=="clear"){
         drawText("");
+        mouseClickMenu = 0
         $(".aMenu").hide()
        
     } // clear menu
+
+   
 
     // determine postition of character
     // this should be the same a cursor
@@ -76,9 +90,33 @@ console.warn("warn:",menu)
     $(".aMenu").css("background-color",menus.gameMenu["background-color"])
     $(".aMenu").css("position","absolute")
     $(".aMenu").css("top",(characterY)*global.spriteSize.width)
-    $(".aMenu").css("left",(theCursor.x*global.spriteSize.width) + global.spriteSize.width)
+    $(".aMenu").css("left",((latestSelectedMonster.x * scaleValue) + global.spriteSize.width) + 20)
     $(".aMenu").css("width",phaseThree)
     $(".aMenu").css("font-size",menus.gameMenu.fontsize)
+    
+
+    if (menu=="monsterMenu") // initial menu
+    {
+        $(".aMenu").html("")
+        $(".aMenu").css("opacity",0.9)
+        menus.monsterMenu.contents.forEach((entry, index) => {
+            $(".aMenu").append("<div class='menuItem' id='" + index + "'>" + entry + "</div>")
+        })
+
+        $(".aMenu").show()
+   
+    }
+
+    // position help for menu
+    // posMenuHelp()
+    
+
+    // map mouse to gameMenu
+  /*  $(".menuItem").click(function(){
+
+        mouseClickMenu = $(this).attr("id")
+
+    })*/
     
 
     
@@ -113,19 +151,28 @@ console.warn("warn:",menu)
     {
         
        $(".aMenu").html("")
+
+        // unbind menu items if needed
+        $(".menuItem").off("click")
   
-       playerSpellBooks[0].spells.forEach((entry, index) => {
+       playerSpellBooks[currentlySelectedCharacterIndex-1].spells.forEach((entry, index) => {
 console.log(">> menu111:",entry)
             // determine what player can summon
             if (entry==="summon"){
                  lock = playerSpellBooks[0].monsterKey.find(element => element.key == index)
                  console.log("lock:",lock)
                  tempIndex = index+1
+                 console.log("tempindex", tempIndex)
+                 console.log("scan for used in monster summon",playerSpellBooks[currentlySelectedCharacterIndex-1].used.includes(tempIndex-1))
+                 if (playerSpellBooks[currentlySelectedCharacterIndex-1].used.includes(tempIndex-1) == false){
                  $(".aMenu").append("<div class='menuItem' id='" + tempIndex + "'>" + entry.toProperCase() + " - " +  lock.realid + "</div>")
+                 }
             } else
             {
                 tempIndex = index+1
+                if (playerSpellBooks[currentlySelectedCharacterIndex-1].used.includes(tempIndex-1) == false){
                 $(".aMenu").append("<div class='menuItem' id='" + tempIndex + "'>" + entry.toProperCase() + "</div>")
+                }
             }
 
             //update playerSpellBooks with menu number
@@ -136,10 +183,20 @@ console.log(">> menu111:",entry)
 
        $(".aMenu").show()
 
+       mouseClickMenu = 0
+
        // map mouse to SelectSpells
     $(".menuItem").click(function(){
 
         mouseClickMenu = $(this).attr("id")
+console.log("m",mouseClickMenu)
+console.log(currentlySelectedCharacterIndex)
+
+        // now remove it from the spellbook :(
+            console.log("spell trying to remove:", playerSpellBooks[currentlySelectedCharacterIndex-1].spells[mouseClickMenu-1])
+            playerSpellBooks[currentlySelectedCharacterIndex-1].used.push(mouseClickMenu-1)
+      //  playerSpellBooks[currentlySelectedCharacterIndex-1].spells = playerSpellBooks[currentlySelectedCharacterIndex-1].spells.filter(item => item !==playerSpellBooks[currentlySelectedCharacterIndex-1].spells[mouseClickMenu-1])
+        
 
     })
     }

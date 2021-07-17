@@ -1,0 +1,18 @@
+// scope
+
+playerTrack [] 
+- what players are computer controlled or not
+- sync with gTrack
+- defined in setup
+- created when you create mages
+- position in array +1 matches gtrack in track array
+
+gridX is the last grid block number the player clicked X
+gridY is the last grid block Y
+pagePos.x - coordinates
+pagePos.y - coordinates
+
+
+fakeTrack? updateFakeTrack is in setup
+faketrack is a copy of track but without the cursor - its basically used as the gameboard
+

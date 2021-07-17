@@ -12,29 +12,33 @@
 <!-- #helper #helperInsule - zindex 18          // bubble for informational text -->
 
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="shields.css">
 <!-- 18 x 14  64x64 -->
 <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
-<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+<script src="scripts\typed.js@2.0.12"></script>
 
 </head>
-<body style="background-color:black;overflow: hidden;margin:0px;cursor:pointer">
+<body style="background-color:white;overflow: hidden;margin:0px;cursor:pointer;opacity:0">
 
 <div id="resources" style="display:none">
   <img id="cursor" src="sprites\cursor.png" style="display:none" alt="cursor">
   <img id="cursor_sel" src="sprites\cursor_sel.png" style="display:none" alt="cursor">
   <img id="cursor_action" src="sprites\cursor_action.png" style="display:none" alt="cursor">
   <img id="vampire" src="sprites\vampire.png" style="display:none" alt="cursor">
-    <img id="horse" src="sprites\horse.png" style="display:none" alt="cursor">
   <img id="mage" src="sprites\mage.png" style="display:none" alt="cursor">
   <img id="mage2" src="sprites\mage2.png" style="display:none" alt="cursor">
   <img id="intro01" src="intro\intro01-min.png" style="display:none" alt="cursor">
   <img id="goblin" src="sprites\goblin.png" style="display:none" alt="cursor">
   <img id="zombie" src="sprites\zombie.png" style="display:none" alt="cursor">
+  <img id="mageStaff" src="sprites\mageStaff.png" style="display:none" alt="cursor">
   <img id="goldendragon" src="sprites\goldendragon.png" style="display:none" alt="cursor">
 </div>
 
+
+
+
 <!-- https://codepen.io/lisilinhart/pen/OJRoRJe -->
-<div id="firstScreen">
+<div id="firstScreen" style="display:none">
   
   <main>
     <div id="topText">
@@ -50,15 +54,73 @@
 
 </div>
 
+
+
+<div id="logo" >
+
+  <img src="imgs/logo.png" >
+  <h2 class="zelda" style="text-align: center;">Ready... v07172021.00031</h2>
+
+</div>
+
 <div id="mainPortal" class="mainPortal" style="display:none;margin: 0 auto;">
+  <canvas class='canvas playArea' id="c" style="opacity:0.8;z-index:1;position:absolute"></canvas>
   <canvas class='canvas playArea' id="canvasBackground" style="display:none;background: url('imgs/background-min.png');opacity:0.5;background-repeat:no-repeat;background-size:cover;z-index: 0;position:absolute"></canvas>
  <canvas class='canvas playArea' id="canvas" style="z-index:5;position:absolute"></canvas> 
  <canvas class='canvas playArea' id="canvas2" style="z-index: 10;position:absolute"></canvas>
+ <canvas class='canvas playArea' id="canvas3" style="z-index: 12;position:absolute"></canvas>
  <canvas class='canvas playArea' id="canvasGrid" style="opacity:0.5;z-index:14;position:absolute"></canvas>
+ <canvas class='canvas playArea' id="canvasChar" style="opacity:0.8;z-index:16;position:absolute"></canvas>
+ <!--  -->
  <div class='canvas' id="menuLayer" style="z-index:17;position:absolute">
   <div id="themenu" style="display:none;position:absolute" class="aMenu"></div>
   <div id="fakeRight" style="display:none;position:absolute;right:60px;width:300px;height:500px;background-color:black"></div>
 </div>
+
+
+<!-- <div id="volcano"><img src="imgs\volcano.jpg" style="opacity:0.6"></div> -->
+
+<style>
+  #logo{
+   margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%)
+  }
+  .mainPortal {
+  /*  display: flex;
+    justify-content: center;
+    transform-origin: "510px 100px";
+    transform: scale(1.7, 1.7);
+   animation: pulseIn 3s ease-in forwards;*/
+  animation:pulseIn 1s ease-in forwards;
+    }
+    
+    @keyframes pulseIn {
+      1% { 
+        transform-origin:110px 110px
+         }
+        30% {
+         
+          transform: scale(2);
+          
+            
+        }
+        100% {
+            transform: scale(1);
+            transform-origin: 700px 700px;
+        }
+    }
+</style>
+
+<div id="UI" style="color:white">
+  <div id="helper"></div>
+</div>
+
+
+
   <!-- <div style="z-index: 1;position:absolute">
     <h1 class="jt --debug">
       <span class="jt__row">
@@ -77,10 +139,19 @@
     </div> -->
 </div>
 
-<div id="helper"></div>
+
 <div id="helperInsult"></div>
-<div id="mouse"><span></span><span></span><p id='miniConsole'></p></div>
+<div id="helperHit"></div>
+<div id="mouse">
+  <span></span><span></span>
+  <p id='miniConsole' style='color:yellow'></p>
+  <p id='mouseEvents' style='color:yellow'></p>
+</div>
 <div id="explosion"></div>
+<div id="explosion3"></div>
+<div id="charging"></div>
+<div id="smoke"></div>
+
 
 <!-- <div class="circle" id="circle"></div> -->
 
@@ -143,3 +214,319 @@
   <script src="drawtext.js"></script>
   <script src="intro.js"></script>
   <script src="ai.js"></script>
+  <script src="lightning.js"></script>
+
+  <script>
+   
+  </script>
+<style>
+  
+  </style>
+
+<div class="davidshields">
+
+  
+</div>
+
+<div class='shields'>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+    <div class='c'></div>
+</div>

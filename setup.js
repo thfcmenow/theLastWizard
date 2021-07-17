@@ -18,6 +18,9 @@ var tempObject = {};
 // monsterKey - convoluted way of working out the playerSpellBooks
 var monsterKey = []
  
+// what players are AI and what are not
+var playerTrack = []
+
 var pagePos = {}
 
  pArray = 0
@@ -119,8 +122,8 @@ if(debug.testMouse.test){
     var mousePos = getSquare(canvasBackground, evt);
     let mouseX = mousePos.x + global.margin.value
     let mouseY = mousePos.y + global.margin.value
-    console.log("debug:",mouseX,mouseY)
-    console.log("debug:",mousePos.x,mousePos.y)
+    // console.log("debug:",mouseX,mouseY)
+    // console.log("debug:",mousePos.x,mousePos.y)
       
     fillSquare(cde, mousePos.x, mousePos.y)
   }, false)
@@ -204,14 +207,26 @@ if (debug.toggleConsole.display === 1)
 }, true)
 }
 
-gKey=-1
+gKey=0
 // class constructor for sprite[]
 class Sprite {
-  constructor (ID,width,height,frameWidth,frameHeight,src,current_state,current_frame,posx,posy,trackMovement,classType,monsterType)
+  constructor (ID,width,height,frameWidth,frameHeight,src,current_state,current_frame,posx,posy,trackMovement,classType,monsterType,root,linkValue=0,human=0)
   {
     gKey++
      this.id = ID;
+     this.linkValue = linkValue;
+     this.root = root;
+     var imageTag = document.createElement("img");
+     var elementToPlace = document.getElementById("resources")
      this.img = document.getElementById(ID);
+     
+     if (this.img == null) {
+       console.log("executing creation")
+       imageTag.setAttribute('id',ID)
+       imageTag.setAttribute('src',"sprites\\" + root + ".png")
+       elementToPlace.appendChild(imageTag)
+       this.img = document.getElementById(ID)
+      }
      this.current_state = current_state;
      this.current_frame = current_frame;
      this.imageWidth = width;
@@ -224,6 +239,7 @@ class Sprite {
      this.classType = classType
      this.monsterType = monsterType
      this.gKey = gKey
+     this.human = human
    };
 }
 
@@ -236,7 +252,7 @@ var randomProperty = function (obj) {
 };
 
 
-function generateSprite(sprite,newrender,keys=0) {
+function generateSprite(sprite,newrender,keys=0,rNum=0) {
  
  
   
@@ -244,6 +260,7 @@ function generateSprite(sprite,newrender,keys=0) {
   let tmpObj2 = {};
   var spellObj = {}
 
+  
   /*if (sprite.trackMovement !==0) // objects like our cursor do not care about being blocked 
   {
    // update gameBoard and render but only if nothing is there
@@ -262,6 +279,7 @@ function generateSprite(sprite,newrender,keys=0) {
       
      
         tmpObj.id = sprite.id
+        tmpObj.root = sprite.root
         tmpObj.x = sprite.posx // accounts for margin
         tmpObj.y = sprite.posy
         tmpObj.gKey = sprite.gKey
@@ -269,23 +287,35 @@ function generateSprite(sprite,newrender,keys=0) {
         tmpObj.gridY = sprite.posy/global.spriteSize.width
         tmpObj.mousePos = (sprite.posx/global.spriteSize.width) + "," + (sprite.posy/global.spriteSize.width)
         tmpObj.CLASS = sprite.classType
+        tmpObj.opacity = 1
+        
 
           if (sprite.classType==="player") {
-             tmpObj.Range = 1 // character movement
-             tmpObj.Origin = {"x":60,"y":10} // where a spell will cast from
+             tmpObj.Range = global.PlayerMaxRange // character movement
+             tmpObj.Origin = {"x":58,"y":17} // where a spell will cast from
+             tmpObj.Owner = sprite.gKey // who owners the mage sprite, the same player duh
+             tmpObj.human = sprite.human // 1 if human controlled
+             tmpObj.DP = [0,0]
+             tmpObj.HP = 30
+             tmpObj.MaxHP = 30
+             tmpObj.AP = 5
           }
-   
+   console.log(sprite)
        if (sprite.classType==="monster") {
-         tmpObj.HP = monsters[sprite.id].HP
-         tmpObj.AP = monsters[sprite.id].AP
-         tmpObj.Range = monsters[sprite.id].Range
-         tmpObj.DP = monsters[sprite.id].DP
+         tmpObj.Owner = currentlySelectedCharacterIndex
+         tmpObj.HP = monsters[sprite.root].HP
+         tmpObj.AP = monsters[sprite.root].AP
+         tmpObj.CLASS = sprite.classType
+         tmpObj.Range = monsters[sprite.root].Range
+         tmpObj.DP = monsters[sprite.root].DP
+         tmpObj.MaxHP = monsters[sprite.root].HP
        }
 
+       
      // if applicaable find monster HP/AP
-     try {tmpHP = monsters[sprite.id].HP; tmpObj.HP = tmpHP} catch(err){}
-     try {tmpAP = monsters[sprite.id].AP; tmpObj.AP = tmpAP} catch(err){}
-     try {tmpCLASS = monsters[sprite.id].CLASS; tmpObj.CLASS = tmpCLASS} catch(err){}
+     try {tmpHP = monsters[sprite.root].HP; tmpObj.HP = tmpHP} catch(err){}
+     try {tmpAP = monsters[sprite.root].AP; tmpObj.AP = tmpAP} catch(err){}
+   //  try {tmpCLASS = monsters[sprite.root].CLASS; tmpObj.CLASS = tmpCLASS} catch(err){}
       }
      
       track.push(tmpObj)
@@ -295,7 +325,7 @@ function generateSprite(sprite,newrender,keys=0) {
      if (sprite.classType == "player") {
 
         // give player 1 range of 1 (pathetic)
-        track[gKey].Range = debug.maxPlayerRange
+       // track[gKey].Range = debug.maxPlayerRange
 
         // store facing direction
         track[gKey].Facing = sprite.current_state
@@ -326,9 +356,10 @@ function generateSprite(sprite,newrender,keys=0) {
       }
       
         //assign the spellboox to the current mage and place in spellbook
-        spellObj = {"id":sprite.id,"spells":tempSpellBook}  // sprite ID is the player
+        spellObj = {"id":sprite.id,"spells":tempSpellBook,"used":[]}  // sprite ID is the player
         playerSpellBooks.push(spellObj)
 
+      
         
       // when the player has summon we have to identify what they can summon
       // the following makes sure that players don't have the same summon
@@ -361,35 +392,11 @@ function generateSprite(sprite,newrender,keys=0) {
 
 playerSpellBooks[pArray].monsterKey = monsterKey
 
+
+
       pArray ++
 
-    
-      
-   /*   var tKeys = []
-monObj = {}
-// now merge monsterKey into the player SpellBooks
-playerSpellBooks.forEach((xx, i) => {
-   monsterKey.forEach((x,i) => {
-
-    if (xx.id === x.playerID) {
-     monObj = {"key":x.key,"summonID":x.id}
-    tKeys.push(monObj)
-
-    }
-  })
-
-xx.summonKey = tKeys
-tKeys=[]
-})*/
-      
-      
-          
-
-         
-
-    
-    
-    
+ 
     
     } // fin setting up spellbook --------------------------------------------------------------------------------------
 
@@ -399,125 +406,7 @@ tKeys=[]
   } // fin generateSprite
 
 
-
-      // convert ini
-       
-        // if spell already added, i-- and try again
-        // however summon can go in book many times
-    /*    if (name==="summon") {
-          // need to send what kind of monster
-          returnMonster = {}
-          while (returnMonster.a !== "a")
-          {
-            Math.floor(Math.random() * 6) + 1 // rand number to pick them from monsters array
-            returnMonster = randomProperty(monsters)
-          }
-          //  tempSpellBook.push(name + returnMonster.id)
-          console.log("monsters>>")
-          console.group()
-          console.log("returnMonster.id",returnMonster.id)
-          tempO = {"playerID":sprite.id,"key":i,"id":returnMonster.id}
-          
-          console.log("monsterKey:",monsterKey)
-          alreadyhave = findO(monsterKey,"id","full",name)
-          console.log("alreadyhave",alreadyhave)
-          console.groupEnd()
-
-          if (alreadyhave == undefined){
-              monsterKey.push(tempO)
-              tempSpellBook.push(name)
-          }
-        } else {
-
-          tempSpell = tempSpellBook.find(element => element == name)
-          console.log(tempSpell)
-          if (tempSpellBook.find(element => element == name) !== "laser") {
-          if (tempSpellBook.find(element => element == name) == undefined) {
-                          tempSpellBook.push(name) 
-                    }
-                  }
-          
-        }
-      
-      }
-
-spellObj = {"id":sprite.id,"spells":tempSpellBook}
-playerSpellBooks.push(spellObj)
-
-
-
-
-
-var tKeys = []
-monObj = {}
-// now merge monsterKey into the player SpellBooks
-playerSpellBooks.forEach((xx, i) => {
-   monsterKey.forEach((x,i) => {
-
-    if (xx.id === x.playerID) {
-      /* add to playerSpellBooks *//*
-
-      monObj = {"key":x.key,"summonID":x.id}
-
-    tKeys.push(monObj)
-
-    }
-  })
-
-xx.summonKey = tKeys
-tKeys=[]
-})
-
-
-
-
-      
-     }
-    
-     // if applicaable find monster HP/AP
-     /*try {tmpHP = monsters[sprite.id].HP; tmpObj.HP = tmpHP} catch(err){}
-     try {tmpAP = monsters[sprite.id].AP; tmpObj.AP = tmpAP} catch(err){}
-     try {tmpCLASS = monsters[sprite.id].CLASS; tmpObj.CLASS = tmpCLASS} catch(err){}*/
-     
-     /*
-     track.push(tmpObj)
-    }
-    
-    
-
-      
-
-     
-
-      // send sprite to renderer (render.js)
-      render(sprite,newrender,keys=0)
-    } else {console.warn("Warning: >",gameBoard['x' + sprite.posx + "y" + sprite.posy],"already exists in that board location...")}
-  } else {
-    
-    // this deals specifically with the cursor
-
-    // place in track that helps track movement and stats
-    let objT = track.find(objT => objT.id === sprite.id);
-    if (objT == undefined)
-    {
-    tmpObj.id = sprite.id
-    tmpObj.x = sprite.posx
-    tmpObj.y = sprite.posy
-    // if applicaable find monster HP/AP
-    try {tmpHP = monsters[sprite.id].HP; tmpObj.HP = tmpHP} catch(err){}
-    try {tmpAP = monsters[sprite.id].AP; tmpObj.AP = tmpAP} catch(err){}
-    try {
-   
-    if (monsters[sprite.id].id !== undefined) { tmpObj.CLASS = "Monster"}
-  } catch(err){}
-    track.push(tmpObj)
-    }
-   
-    
-
-    render(sprite,newrender,keys)
-  }*/
-  
+ 
 
 function beastStats(beasts){
   console.log(beasts)
@@ -531,48 +420,89 @@ function beastStats(beasts){
 
 function playSound(path,vol=1,loopMode=false)
 {
-    var audio = new Audio(path);
+  var audio = new Audio(path);
+    audio.pause()
     audio.volume = vol;
     if (global.audioOverride == 1) audio.volume = 0;
     audio.loop= loopMode;
     audio.playbackRate=1
     audio.play();
-   /* let music = new audio({
-      loop: true,
-      volume: 1,
-      src: ['/yourSounds/music.mp3']
-  })*/
+  
 }
+var mySound;
+
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function(){
+    this.sound.play();
+  }
+  this.stop = function(){
+    this.sound.pause();
+  }
+}
+
+// setup sound objects
+var impact = new sound("audio/impact.wav")
+
+
+function summonRandomMonster(monsterSpell){
+  rNum = (Math.random() * (10000000 - 10 + 1) ) << 0;
+  eval('var ' + monsterSpell + rNum + ' = new Sprite("' + monsterSpell + rNum + '",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"' + monsterSpell + rNum + '","left",0,' + gridX +','+ gridY + ',1,"monster","' + monsterSpell + rNum + '","' + monsterSpell + '")')
+  eval('generateSprite(' + monsterSpell + rNum +',1,' + rNum + ')')
+  // update gameboard
+  updateFakeTrack()
+}
+
 
 function mainProg(){
 
-
-  var cursor = new Sprite("cursor",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"cursor.png","down",0,11,0,0,"cursor","Cursor")
-  generateSprite(cursor,0)
- 
+  $("#firstScreen").remove()
   
+  //var cursor = new Sprite("cursor",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"cursor.png","down",0,11,0,0,"cursor","Cursor","cursor")
+  //generateSprite(cursor,0)
+  toao = {"id":"tempcursor","gKey":0}
+  track.push(toao)
  
-  var playerOne = new Sprite("mage",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"mage.png","right",1,0,0,1,"player","Player")
+
+  
+ // playerOne human control 1 at the end, wah what about playerTrack!
+  var playerOne = new Sprite("mage",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"mage.png","right",1,1,1,1,"player","Player","mage",0,1)
   generateSprite(playerOne,1)
+  playerTrack.push("human")
 
-  var playerTwo = new Sprite("mage2",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"mage2.png","left",0,gridsWidth-1,gridsHeight-1,1,"player","Player")
+  var playerTwo = new Sprite("mage2",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"mage2.png","left",0,9,1,1,"player","Player","mage2")
+
+  // var playerTwo = new Sprite("mage2",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"mage2.png","left",0,gridsWidth-2,gridsHeight-2,1,"player","Player","mage2")
+  // var playerTwo = new Sprite("mage2",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"mage2.png","left",0,4,1,1,"player","Player","mage2")
   generateSprite(playerTwo,1)
+  playerTrack.push("computer")
 
-  var vampire = new Sprite("vampire",64,128,64,64,"vampire.png","down",0,6,3,1,"monster")
+  //var playerThree = new Sprite("mageStaff",global.spriteSize.width,128,global.spriteSize.width,global.spriteSize.width,"mageStaff.png","left",0,4,1,1,"player","Player","mageStaff")
+  //generateSprite(playerThree,1)
+  //playerTrack.push("computer")
+
+  // sprites[1].thesprite.img.src = "sprites\\mageStaff.png"
+  
+
+  /* var vampire = new Sprite("vampire",64,128,64,64,"vampire.png","down",0,6,3,1,"monster","Monster","vampire")
   generateSprite(vampire,1)
  
 
-  var goblin = new Sprite("goblin",64,128,64,64,"goblin.png","down",0,4,2,1,"monster")
- generateSprite(goblin,1)
- 
- // constructor (ID,width,height,frameWidth,frameHeight,src,current_state,current_frame,posx,posy,trackMovement,classType,monsterType)
-  // 574 66
-   // var horse = new Sprite("horse",574,64,64,64,"horse.png","down",0,7,2,1,"monster")
- // generateSprite(horse,1)
+  var goblin = new Sprite("goblin",64,128,64,64,"goblin.png","down",0,4,2,1,"monster","Monster","goblin")
+ generateSprite(goblin,1)*/
 
 
  //update gameboard
  updateFakeTrack()
+
+ //init mouse
+ handleInput("add","handleMoves")
+ 
 
  // drawText("GAME Loaded")
 
@@ -580,7 +510,40 @@ function mainProg(){
 
 
  
- // select random player
+ 
+
+ //lines
+ 
+ /*var helperElement = document.getElementById('helper').style;
+function helper(obJS,text){
+    
+    $("#helper").html("")
+    helperElement.transition = '0.3s';
+    helperElement.border = 'border 1px white'
+    helperElement.opacity = 1 
+    $("#helper").show()
+    $("#helper").css("left",(obJS.x + global.spriteSize.width + 80)*scaleValue)
+    $("#helper").css("top",(obJS.y + global.spriteSize.height + 0)*scaleValue)
+    options = {strings: [text],contentType: 'html', typeSpeed: 20};
+    var typed = new Typed('#helper', options);
+    sleep(4000).then(() => { 
+        helperElement.transition = '1s';
+        helperElement.opacity = 0
+    });
+
+    }*/
+ 
+ 
+ 
+
+// helper(track[1],"why no worky")
+
+
+  }
+
+//helper functions ----------------------
+
+// select random player
  // display insult every x second
  // https://www.sitepoint.com/delay-sleep-pause-wait/
  // https://github.com/mattboldt/typed.js/
@@ -605,53 +568,58 @@ function mainProg(){
  // fireIt()
  var fin = setInterval(fireIt,global.insults)
 
- //lines
- 
- var helperElement = document.getElementById('helper').style;
-function helper(obJS,text){
-    
-    $("#helper").html("")
-    helperElement.transition = '0.3s';
-    helperElement.border = 'border 1px white'
-    helperElement.opacity = 1 
-    $("#helper").show()
-    $("#helper").css("left",(obJS.x + global.spriteSize.width + 80)*scaleValue)
-    $("#helper").css("top",(obJS.y + global.spriteSize.height + 0)*scaleValue)
-    options = {strings: [text],contentType: 'html', typeSpeed: 20};
-    var typed = new Typed('#helper', options);
-    sleep(4000).then(() => { 
-        helperElement.transition = '1s';
-        helperElement.opacity = 0
-    });
+ var cancelTurn = 0
 
-    }
- 
- 
- 
-
-// helper(track[1],"why no worky")
-
-
-  }
+ $("#cancelTurn").click(function(){
+   console.log("registered click?")
+   cancelTurn = 1
+ })
 
 var helperElement = document.getElementById('helper').style;
-function helper(obJS,text){
+function helper(obJS="",text,color="white"){
     
     $("#helper").html("")
     helperElement.transition = '0.3s';
-    helperElement.border = 'border 1px white'
+    
     helperElement.opacity = 1 
+    helperElement.fontSize = 22
+  
     $("#helper").show()
-    $("#helper").css("left",(obJS.x + global.spriteSize.width + 80)*scaleValue)
-    $("#helper").css("top",(obJS.y + global.spriteSize.height + 0)*scaleValue)
-    options = {strings: [text],contentType: 'html', typeSpeed: 20};
-    var typed = new Typed('#helper', options);
-    sleep(4000).then(() => { 
-        helperElement.transition = '1s';
-        helperElement.opacity = 0
-    });
+   // $("#helper").css("left",(obJS.x + global.spriteSize.width + 80)*scaleValue)
+  //  $("#helper").css("top",(obJS.y + global.spriteSize.height + 0)*scaleValue)
+  //  options = {strings: [text],contentType: 'html', typeSpeed: 20};
+  //  var typed = new Typed('#helper', options);
+  //  sleep(transSpeed).then(() => { 
+  //      helperElement.transition = '1s';
+  //      helperElement.opacity = 0
+  //  });
+  helperElement.color = color
+  $("#helper").html(text)
+
+  if (text == "Out of Range!") {
+    $("#helper").append(" - <span id='cancelTurn' style='color:yellow'>Cancel Turn</span> - or try again")
+  }
 
     }
+
+var helperHit = document.getElementById('helperHit').style;
+function helperHitC(obJS,text,transSpeed=2000){
+        
+        $("#helperHit").html("")
+        helperHit.transition = '0.3s';
+        helperHit.border = 'border 1px white'
+        helperHit.opacity = 1 
+        $("#helperHit").show()
+        $("#helperHit").css("left",(obJS.x + 80)*scaleValue)
+        $("#helperHit").css("top",(obJS.y +  0)*scaleValue)
+        options = {strings: [text],contentType: 'html', typeSpeed: 5};
+        var typed = new Typed('#helperHit', options);
+        sleep(transSpeed).then(() => { 
+            helperHit.transition = '1s';
+            helperHit.opacity = 0
+        });
+    
+}
   
 // some first screen setup
 // vertically align menu
@@ -667,6 +635,9 @@ $("#menuZoom").click(function(){
   $("#scaleRatio").text(scaleValue)
 })
 
+// display logo
+
+
 // set no of players/icons on screen
 iconSprite = '<img class="wiz" src="sprites/goldendragon.png">'
 
@@ -676,32 +647,55 @@ let menuPlayers = (playerscount) => {
   for (let i = 0; i < playerscount-1; i++) {
     $("#iconWiz").append(iconSprite)
   }
-  global.noOfPlayers = playerscount
+  
+  global.noOfPlayers = playerscount-1
 }
 
-playerscount = global.noOfPlayers
-menuPlayers(playerscount)
+// first logo
+$("body").click(function(){
+  $("#logo").hide()
+  $("body").css("background-color","black")
+  $("#firstScreen").show()
 
-$("#menuWizards").click(function(){
-  playersCount = $("#theWizards").text()
-  playersCount < 4 ? playersCount ++ : playersCount=2
-  $("#theWizards").text(playersCount)
-  menuPlayers(playersCount)
-  $(".wiz").css("transform", "scale(" + scaleValue + ")")
+
+  mySound = new sound("audio/last.mp3");
+  mySound.play()
+ 
+
+  playerscount = global.noOfPlayers
+ 
+  menuPlayers(playerscount)
+
+  $("#menuWizards").click(function(){
+    playersCount = $("#theWizards").text()
+    playersCount < 4 ? playersCount ++ : playersCount=2
+    $("#theWizards").text(playersCount)
+    menuPlayers(playersCount)
+    $(".wiz").css("transform", "scale(" + scaleValue + ")")
+  })
+
 })
+
+
+
+
 
 // Menu Begin
 $("#initProgram").click(function(event){
   event.preventDefault
+  $("body").unbind("click")
+  mySound.stop()
   $("#firstScreen").addClass("homefadeOut")
   $(".homefadeOut").one("animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd", function(){
    $("#firstScreen").hide()
    $("#mainPortal").show()
-   playSound("audio/blob.mp3",0.4,true)
+   playSound("audio/blob.mp3",0.8,true)
    mainProg()
      });
   
 })
+
+
 
 // bypass Menu
 // $("#initProgram").click()
@@ -710,6 +704,7 @@ fakeTrack = []
 
 function updateFakeTrack()
 {
+  fakeTrack = []
  for (o = 0;o < track.length;o++){
    if (track[o].CLASS !== "cursor"){
      fakeTrack.push(track[o])
@@ -729,9 +724,13 @@ mouser.color = 'yellow'
 scaledMargin = global.margin.value * scaleValue * scaleValue
 scaledBlockSize = global.spriteSize.width * scaleValue * scaleValue // block size scalevalue
 
+console.groupCollapsed("setup - margins")
+console.log("scaledMargin:",scaledMargin)
+console.log("scaledBlockSize:",scaledBlockSize)
+console.groupEnd()
 
 var latestSelectedMonster = "";
-
+var mousePos = {}
 $(document).ready(function(){
 $("body").mousemove(function(e){
  
@@ -742,8 +741,8 @@ $("body").mousemove(function(e){
   // e.pageX - global.margin.value
   //take into accound margin and scale
       pagePos = {'x': pX,'y': pY}
-      gridX = Math.floor(pX/global.spriteSize.width)
-      gridY = Math.floor(pY/global.spriteSize.height)
+      gridX = Math.floor(pX/(global.spriteSize.width*scaleValue*scaleValue))
+      gridY = Math.floor(pY/(global.spriteSize.height*scaleValue*scaleValue))
       //  var clientCoords = "( " + e.clientX + ", " + e.clientY + " )";
       subText = "pagePos: " + pagePos.x + " (" + gridX + "), "
       subText += pagePos.y + " (" + gridY + ") - "
@@ -768,3 +767,52 @@ $("body").mousemove(function(e){
         //  $("#mouse span:last").text("( e.clientX, e.clientY ) - " + clientCoords);
  });
 })
+
+// david shields code
+// document.getElementById("myDIV").style.transform = "rotate(7deg)";
+
+
+
+/*
+var
+      stylesheet = document.styleSheets[2] // replace 0 with the number of the stylesheet that you want to modify
+    , rules = stylesheet.rules
+    , i = rules.length
+    , keyframes
+    , keyframe
+;
+
+while (i--) {
+ 
+    keyframes = rules.item(i);
+    console.log(keyframes)
+    if (
+        (
+               keyframes.type === keyframes.KEYFRAMES_RULE
+            || keyframes.type === keyframes.WEBKIT_KEYFRAMES_RULE
+        )
+        && keyframes.name === "pulseIn"
+    ) {
+        rules = keyframes.cssRules;
+        i = rules.length;
+        while (i--) {
+            keyframe = rules.item(i);
+            console.log(keyframe)
+            if (
+                (
+                       keyframe.type === keyframe.KEYFRAME_RULE
+                    || keyframe.type === keyframe.WEBKIT_KEYFRAME_RULE
+                )
+                && keyframe.keyText === "100%"
+            ) {
+               keyframe.style.webkitTransform =
+                keyframe.style.transform =
+                    "translateX(600px)";
+                break;
+            }
+        }
+        break;
+    }
+} 
+
+*/
