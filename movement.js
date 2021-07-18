@@ -189,7 +189,7 @@ function strikePath(minFireX,minFireY,tarx,tary)
       
 }
 
-
+shieldcope = 0
 
 function strike(e){
     // when you looking for target for ranged spell
@@ -302,9 +302,23 @@ while (++i < track.length) {
         $(".shields").css("left", track[currentlySelectedCharacterIndex].x+86)
         $(".shields").css("top", track[currentlySelectedCharacterIndex].y+54)
         $(".shields").show()
+      
+      
         grix.clearRect(0, 0, canvas3.width, canvas3.height);
         bCheck = 1
     } 
+
+    if (mainspell == "shields")
+    {
+          // increase shielded player HP by 10
+        if (shieldcope==0){
+        console.log("track hp: ", parseInt(track[1].HP))
+
+        track[currentlySelectedCharacterIndex].HP = parseInt(track[currentlySelectedCharacterIndex].HP) + 10
+        shieldcope = 1
+        }
+
+    }
 
     if (mainspell == "lightning")
     {

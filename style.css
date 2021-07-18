@@ -74,6 +74,8 @@ z-index:300
   opacity: 1
 }
 
+.cursor_shape1 {cursor: url('imgs/rpg.cur'),auto;}
+
 #helperInsult{
   background-color:#200450;
   font-family: 'Zelda';
@@ -93,7 +95,7 @@ z-index:300
 
 @keyframes wiggle {
  0% {
-     transform: scale(5)
+     transform: scale(3)
  }
  
  100% {

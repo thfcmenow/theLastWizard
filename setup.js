@@ -732,8 +732,20 @@ console.groupEnd()
 var latestSelectedMonster = "";
 var mousePos = {}
 $(document).ready(function(){
+
+$("body").click(function(e){
+    pX = Math.floor(e.pageX * scaleValue) - scaledMargin
+    pY = Math.floor(e.pageY * scaleValue) - scaledMargin
+    pagePos = {'x': pX,'y': pY}
+    gridX = Math.floor(pX/(global.spriteSize.width*scaleValue*scaleValue))
+    gridY = Math.floor(pY/(global.spriteSize.height*scaleValue*scaleValue))
+    result = fakeTrack.find( ({mousePos}) => mousePos === gridX + "," + gridY  )
+      if (result !== undefined){ 
+				latestSelectedMonster = result
+      }
+})
+
 $("body").mousemove(function(e){
- 
  
 
   pX = Math.floor(e.pageX * scaleValue) - scaledMargin
@@ -754,7 +766,7 @@ $("body").mousemove(function(e){
       result = fakeTrack.find( ({mousePos}) => mousePos === gridX + "," + gridY  )
       if (result !== undefined){ 
 		$("#mouse span:last").text(result.id)
-		latestSelectedMonster = result
+	// 	latestSelectedMonster = result
 		$("#miniConsole").text(latestSelectedMonster.id + " | HP" + latestSelectedMonster.HP)
 		
 		}
@@ -768,6 +780,8 @@ $("body").mousemove(function(e){
  });
 })
 
+//sp7.left = 700
+//sp7.top = 500
 // david shields code
 // document.getElementById("myDIV").style.transform = "rotate(7deg)";
 

@@ -85,7 +85,7 @@ var global = {
 "noOfPlayers": 2, // default no of players (2-4)
 "insults": 6000, // how often should insults be generated
 "audioOverride":0, // if set to 1 will disable all audio
-"PlayerMaxRange":15 // ordinarily set to 1
+"PlayerMaxRange":2 // ordinarily set to 1
 }  
 
 // global.boundary.width = window.innerWidth;
@@ -550,14 +550,14 @@ onComplete: function(){sp3.display = "none"}
 });
 
 // smoke fx
-/*sp7 = document.getElementById("smoke").style
-sp7.display = "none"
+/*sp7 = document.getElementById("smokeFX").style
+// sp7.display = "none"
 sp7.position = "absolute";
 sp7.transform = "scale(1)";
 sp7.zIndex = 58
 sp8 = new jSprite({
 spriteSheet: "./sprites/smoke.png",
-container: "smoke",
+container: "smokeFX",
 startFrame: 1,
 length:50,
 columns: 8,
@@ -568,8 +568,8 @@ widthOffset: 0,
 repeat: true,
 onStart: function(){sp7.display = "block"},
 onComplete: function(){sp7.display = "none"}
-});*/
-
+});
+*/
 
 
 
